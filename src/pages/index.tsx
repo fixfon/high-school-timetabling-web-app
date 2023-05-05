@@ -1,9 +1,10 @@
 import { type NextPage } from "next";
 import Head from "next/head";
+import Layout from "~/components/home/Layout";
 import Link from "next/link";
-import { signIn, signOut, useSession } from "next-auth/react";
+import Image from "next/image";
 
-import { api } from "~/utils/api";
+// import { api } from "~/utils/api";
 
 const Home: NextPage = (props) => {
   return (
@@ -13,79 +14,47 @@ const Home: NextPage = (props) => {
         <meta name="description" content="High School Timetabler" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
-        <div className="flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          <h1 className="text-5xl font-extrabold tracking-tight text-white">
-            Dummy App for High School Timetabling
-          </h1>
-          <div className="flex flex-col items-center justify-center gap-4 md:gap-8">
-            <h3 className="text-xl font-bold text-white">
-              This is main landing page for signed in and not signed in users.
+      <Layout>
+        <div className="mx-auto flex w-full max-w-[1440px] gap-2 py-8">
+          <div className="flex w-1/2 flex-col items-center justify-center gap-12">
+            <h1 className="text-center text-5xl font-extrabold">
+              Transform the way you schedule high school classes with{" "}
+              <span className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-transparent">
+                TimetablePro
+              </span>
+            </h1>
+            <h3>
+              Smart, simple, and effective scheduling for a better education.
+              Say goodbye to the headache of juggling teacher schedules and
+              classroom assignments.
             </h3>
-
-            <div className="font-bold text-white">
-              <h3 className="text-xl">Other Pages:</h3>
-              <ul className="uppercase">
+            <div>
+              <ul className="flex items-center justify-center gap-24">
                 <li>
-                  <Link href="/dashboard/classrooms">
-                    <p>Classrooms</p>
+                  <Link href="/register">
+                    <button className="rounded-lg bg-primary px-4 py-2 text-2xl font-bold text-text-light transition-colors hover:bg-button-hover-primary">
+                      Get Started
+                    </button>
                   </Link>
                 </li>
                 <li>
-                  <Link href="/dashboard/teachers">
-                    <p>Teachers</p>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/dashboard/subjects">
-                    <p>Subjects</p>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/dashboard/terms">
-                    <p>Terms</p>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/dashboard/timetables">
-                    <p>Timetables</p>
+                  <Link
+                    href="/features"
+                    className="text-2xl font-bold transition-colors hover:text-primary"
+                  >
+                    Learn More --
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
-          <div className="flex flex-col items-center gap-2">
-            {/* <CreateSuperAdmin /> */}
-            <AuthShowcase />
+          <div className="w-1/2">
+            <Image src="/hero.svg" alt="Hero" width={566} height={400} />
           </div>
         </div>
-      </main>
+      </Layout>
     </>
   );
 };
 
 export default Home;
-
-const AuthShowcase: React.FC = () => {
-  const { data: sessionData } = useSession();
-  // const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-  //   undefined, // no input
-  //   { enabled: sessionData?.user !== undefined }
-  // );
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <p className="text-center text-2xl text-white">
-        {sessionData && <span>Logged in as {sessionData.user?.id}</span>}
-      </p>
-      <button
-        className="rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
-        onClick={
-          sessionData ? () => void signOut() : () => void signIn("credentials")
-        }
-      >
-        {sessionData ? "Sign out" : "Sign in"}
-      </button>
-    </div>
-  );
-};
