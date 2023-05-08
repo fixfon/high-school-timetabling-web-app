@@ -14,18 +14,6 @@ export default function Navbar() {
           <ul className="flex items-center justify-center gap-8 text-xl font-semibold">
             <li>
               <Link
-                href="/features"
-                className={
-                  router.pathname == "/features"
-                    ? "text-primary"
-                    : "transition-colors hover:text-primary"
-                }
-              >
-                Features
-              </Link>
-            </li>
-            <li>
-              <Link
                 href="/about-us"
                 className={
                   router.pathname == "/about-us"

@@ -4,7 +4,7 @@ export default function Testimonials() {
   return (
     <div className="mx-auto flex w-full flex-col">
       <div className="flex flex-col items-center justify-center bg-background-dark py-10 text-center">
-        <h2 className="pb-4 text-4xl font-extrabold text-secondary">
+        <h2 className="pb-4 text-5xl font-extrabold text-secondary">
           A Lot of Happy
         </h2>
         <h3 className="inline-block bg-gradient-to-r from-primary via-secondary to-complementary bg-clip-text text-2xl text-transparent">
@@ -33,7 +33,9 @@ export default function Testimonials() {
             />
             <div>
               <h3 className="text-2xl">A***** T*****</h3>
-              <h4 className="italic opacity-90 text-base text-end">School Manager</h4>
+              <h4 className="text-end text-base italic opacity-90">
+                School Manager
+              </h4>
             </div>
           </div>
         </div>
@@ -56,7 +58,7 @@ export default function Testimonials() {
             />
             <div>
               <h3 className="text-2xl">C**** S******</h3>
-              <h4 className="italic opacity-90 text-base text-end">Teacher</h4>
+              <h4 className="text-end text-base italic opacity-90">Teacher</h4>
             </div>
           </div>
         </div>
@@ -78,7 +80,7 @@ export default function Testimonials() {
             />
             <div>
               <h3 className="text-2xl">V**** Y******</h3>
-              <h4 className="italic opacity-90 text-base text-end">Student</h4>
+              <h4 className="text-end text-base italic opacity-90">Student</h4>
             </div>
           </div>
         </div>

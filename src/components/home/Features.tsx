@@ -20,7 +20,7 @@ export default function Features() {
           height={646}
         />
       </div>
-      <div className="flex flex-col items-center justify-center pt-20">
+      <div className="flex flex-col items-center justify-center pt-20" id="features">
         <div className="flex px-8 pb-10">
           <div className="flex w-1/2 flex-shrink flex-col items-center justify-evenly py-16">
             <h2 className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">

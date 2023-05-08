@@ -3,6 +3,18 @@ import Link from "next/link";
 import { AiOutlineArrowRight } from "react-icons/ai";
 
 export default function Hero() {
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    // first prevent the default behavior
+    e.preventDefault();
+    // get the href and remove everything before the hash (#)
+    const href = e.currentTarget.href;
+    const targetId = href.replace(/.*\#/, "");
+    // get the element by id and use scrollIntoView
+    const elem = document.getElementById(targetId);
+    elem?.scrollIntoView({
+      behavior: "smooth",
+    });
+  };
   return (
     <div className="mx-auto flex w-full max-w-[1440px] gap-2 py-8">
       <div className="flex w-1/2 flex-col items-center justify-center gap-12">
@@ -28,7 +40,8 @@ export default function Hero() {
             </li>
             <li>
               <Link
-                href="/features"
+                href="#features"
+                onClick={handleScroll}
                 className="flex items-center justify-center gap-2 text-2xl font-bold transition-colors hover:text-primary"
               >
                 <p>Learn More</p> <AiOutlineArrowRight />
