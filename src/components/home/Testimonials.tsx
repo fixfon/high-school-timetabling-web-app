@@ -26,7 +26,8 @@ export default function Testimonials() {
           </p>
           <div className="flex items-center justify-start gap-6 pt-8">
             <Image
-              src="/placeholder3.png"
+              className="rounded-full"
+              src="/manager.jpg"
               alt="Placeholder 3"
               width={75}
               height={75}
@@ -51,7 +52,8 @@ export default function Testimonials() {
           </p>
           <div className="flex items-center justify-start gap-6 pt-8">
             <Image
-              src="/placeholder3.png"
+              className="rounded-full"
+              src="/teacher.jpg"
               alt="Placeholder 3"
               width={75}
               height={75}
@@ -73,7 +75,8 @@ export default function Testimonials() {
           </p>
           <div className="flex items-center justify-start gap-6 pt-8">
             <Image
-              src="/placeholder3.png"
+              className="rounded-full"
+              src="/student.jpg"
               alt="Placeholder 3"
               width={75}
               height={75}

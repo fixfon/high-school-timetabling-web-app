@@ -21,7 +21,7 @@ export default function CTA() {
       />
       <h2 className="mb-6 text-4xl font-extrabold">JOIN US TODAY</h2>
       <Link href="/register">
-        <button className="rounded-lg bg-secondary px-4 py-2 text-2xl font-bold text-primary shadow-glow transition-all hover:brightness-125">
+        <button className="rounded-lg bg-secondary px-6 py-4 text-2xl font-bold text-primary shadow-glow transition-all hover:brightness-125">
           Get Started
         </button>
       </Link>
