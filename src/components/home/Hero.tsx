@@ -12,7 +12,7 @@ export default function Hero() {
             TimetablePro
           </span>
         </h1>
-        <h3>
+        <h3 className="text-xl">
           Smart, simple, and effective scheduling for a better education. Say
           goodbye to the headache of juggling teacher schedules and classroom
           assignments.
@@ -38,7 +38,7 @@ export default function Hero() {
         </div>
       </div>
       <div className="w-1/2">
-        <Image src="/hero_1.svg" alt="Hero" width={566} height={400} />
+        <Image src="/hero_1.svg" priority alt="Hero" width={566} height={400} />
       </div>
     </div>
   );
