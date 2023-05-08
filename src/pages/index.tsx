@@ -1,5 +1,6 @@
 import { type NextPage } from "next";
 import Head from "next/head";
+import CTA from "~/components/home/Cta";
 import Features from "~/components/home/Features";
 import Hero from "~/components/home/Hero";
 import Layout from "~/components/home/Layout";
@@ -24,6 +25,7 @@ const Home: NextPage = (props) => {
         <SocialProof />
         <Features />
         <Testimonials />
+        <CTA />
       </Layout>
     </>
   );

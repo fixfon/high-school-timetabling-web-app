@@ -4,6 +4,9 @@ export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      boxShadow: {
+        "glow": "0 0 12px 2px rgba(241, 245, 249, 0.5)",
+      },
       colors: {
         primary: "#5090FF",
         secondary: "#F1F5F9",
