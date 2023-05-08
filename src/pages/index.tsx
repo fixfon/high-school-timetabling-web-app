@@ -4,6 +4,7 @@ import Features from "~/components/home/Features";
 import Hero from "~/components/home/Hero";
 import Layout from "~/components/home/Layout";
 import SocialProof from "~/components/home/SocialProof";
+import Testimonials from "~/components/home/Testimonials";
 
 // import { api } from "~/utils/api";
 
@@ -22,6 +23,7 @@ const Home: NextPage = (props) => {
         <Hero />
         <SocialProof />
         <Features />
+        <Testimonials />
       </Layout>
     </>
   );
