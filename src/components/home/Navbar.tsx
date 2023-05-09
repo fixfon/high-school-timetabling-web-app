@@ -1,17 +1,54 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useState } from "react";
+import { HiMenu } from "react-icons/hi";
+import { IoClose } from "react-icons/io5";
 
 export default function Navbar() {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="h-20 w-full shadow-xl">
-      <div className="mx-auto flex h-full w-full max-w-[1440px] items-center justify-between py-4">
+    <nav
+      className={`relative z-10 h-20 w-full shadow-xl ${
+        isOpen
+          ? "before:fixed before:inset-0 before:bg-gradient-to-b before:from-transparent before:to-[rgba(0,0,0,0.5)] before:content-['']"
+          : ""
+      }`}
+    >
+      <div className="container mx-auto flex h-full w-full items-center justify-between px-4 py-4 lg:px-0">
         <div>
           <h1 className="text-4xl">TimetablePRO</h1>
         </div>
-        <div>
-          <ul className="flex items-center justify-center gap-8 text-xl font-semibold">
+        {isOpen ? (
+          <button
+            className="z-20 focus:outline-none lg:hidden"
+            aria-expanded="true"
+            aria-controls="navbar-def"
+            onClick={() => setIsOpen(false)}
+          >
+            <IoClose className="h-10 w-10 text-text-dark transition-all hover:text-primary" />
+          </button>
+        ) : (
+          <button
+            className="focus:outline-none lg:hidden"
+            aria-expanded="false"
+            aria-controls="navbar-def"
+            onClick={() => setIsOpen(true)}
+          >
+            <HiMenu className="h-10 w-10 text-text-dark transition-all hover:text-primary" />
+          </button>
+        )}
+
+        <div
+          id="navbar-def"
+          className={`w-full lg:flex lg:flex-row lg:items-center lg:justify-between ${
+            isOpen
+              ? "absolute right-0 top-20 flex w-2/3 flex-col-reverse gap-12 rounded-b-2xl bg-background-light py-6 shadow-2xl"
+              : "hidden"
+          }`}
+        >
+          <ul className="flex flex-col items-center justify-center gap-8 text-2xl font-semibold lg:mx-auto lg:flex-row lg:text-xl">
             <li>
               <Link
                 href="/about-us"
@@ -49,9 +86,8 @@ export default function Navbar() {
               </Link>
             </li>
           </ul>
-        </div>
-        <div>
-          <ul className="flex items-center justify-center gap-8 text-xl font-semibold ">
+
+          <ul className="flex flex-col items-center justify-center gap-8 text-2xl font-semibold lg:flex-row lg:text-xl ">
             <li>
               <Link
                 href="/login"

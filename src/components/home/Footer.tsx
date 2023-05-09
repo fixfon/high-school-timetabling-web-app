@@ -3,9 +3,9 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <div className="mx-auto mt-12 flex w-full max-w-[1440px] flex-col">
-      <div className="mx-auto flex w-4/5 items-center justify-between text-xl font-medium">
-        <ul className="flex items-center justify-center gap-16">
+    <div className="container mx-auto mt-12 flex w-full flex-col">
+      <div className="mx-auto flex gap-8 md:gap-0 md:w-4/5 flex-col items-center justify-between text-xl font-medium md:flex-row">
+        <ul className="flex flex-col items-center justify-center gap-4 md:gap-16 md:flex-row">
           <li>
             <Link
               href="/about-us"
@@ -23,7 +23,7 @@ export default function Footer() {
             </Link>
           </li>
         </ul>
-        <ul className="flex items-center justify-center gap-16">
+        <ul className="flex flex-col items-center justify-center gap-4 md:gap-16 md:flex-row">
           <li>
             <Link
               href="/login"
@@ -43,8 +43,8 @@ export default function Footer() {
         </ul>
       </div>
       <hr className="my-4 border-text-dark" />
-      <div className="flex items-center">
-        <div className="flex w-1/3 items-center justify-center gap-4">
+      <div className="flex items-center lg:flex-row flex-col lg:gap-0 gap-12 py-4">
+        <div className="flex lg:w-1/3 items-center justify-center gap-6 lg:gap-4">
           <Link href="#" className="transition-all hover:scale-110">
             <Image
               className="select-none"
@@ -69,7 +69,7 @@ export default function Footer() {
             <Image src="/twitter.svg" alt="Twitter" width={40} height={40} />
           </Link>
         </div>
-        <div className="flex w-1/3 items-center justify-center">
+        <div className="flex lg:w-1/3 items-center justify-center">
           <Image
             src="/placeholder5.png"
             alt="Placeholder 5"
@@ -77,18 +77,18 @@ export default function Footer() {
             height={150}
           />
         </div>
-        <div className="flex w-1/3 flex-col items-center justify-center gap-4">
+        <div className="flex lg:w-1/3 flex-col items-center justify-center gap-4">
           <input
             className="w-60 rounded-3xl border-2 border-background-dark/50 px-3 py-1 text-base"
             type="email"
             placeholder="Email Address"
           />
-          <button className="rounded-lg bg-primary px-3 py-1 text-base font-medium text-text-light transition-colors hover:bg-button-hover-primary">
+          <button className="rounded-lg bg-primary px-3 py-2 text-base font-medium text-text-light transition-colors hover:bg-button-hover-primary">
             Subscribe to Newsletter
           </button>
         </div>
       </div>
-      <div>
+      <div className="mt-4 self-center">
         <p>
           2023 © -{" "}
           <Link

@@ -2,12 +2,12 @@ import Image from "next/image";
 
 export default function Features() {
   return (
-    <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center justify-center py-16">
-      <div className="flex flex-col items-center justify-center">
+    <div className="container mx-auto flex w-full flex-col items-center justify-center py-16">
+      <div className="flex flex-col items-center justify-center px-8 lg:px-0">
         <h1 className="pb-8 text-4xl font-black text-primary">
           Create Most Optimized Timetable
         </h1>
-        <p className="pb-16 text-xl">
+        <p className="max-w-[1440px] pb-16 text-xl">
           With our powerful optimization technology, you can create a semester
           timetable that maximizes efficiency and ensures that every student
           gets the education they deserve. Prepare your calendar that satisfies
@@ -20,9 +20,12 @@ export default function Features() {
           height={646}
         />
       </div>
-      <div className="flex flex-col items-center justify-center pt-20" id="features">
-        <div className="flex px-8 pb-10">
-          <div className="flex w-1/2 flex-shrink flex-col items-center justify-evenly py-16">
+      <div
+        className="flex flex-col items-center justify-center pt-20"
+        id="features"
+      >
+        <div className="flex flex-col px-8 pb-10 lg:flex-row lg:gap-6">
+          <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
             <h2 className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
               Manage Teachers
             </h2>
@@ -33,7 +36,7 @@ export default function Features() {
               view their weekly schedules.
             </p>
           </div>
-          <div className="flex w-1/2 items-center justify-center">
+          <div className="flex items-center justify-center lg:w-1/2">
             <Image
               src="/placeholder2.png"
               alt="Placeholder 2"
@@ -43,8 +46,8 @@ export default function Features() {
           </div>
         </div>
 
-        <div className="flex flex-row-reverse px-8 pb-10">
-          <div className="flex w-1/2 flex-shrink flex-col items-center justify-evenly py-16">
+        <div className="flex flex-col px-8 pb-10 lg:flex-row-reverse lg:gap-6">
+          <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
             <h2 className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
               Manage Classrooms
             </h2>
@@ -54,7 +57,7 @@ export default function Features() {
               official syllabus.
             </p>
           </div>
-          <div className="flex w-1/2 items-center justify-center">
+          <div className="flex items-center justify-center lg:w-1/2">
             <Image
               src="/placeholder2.png"
               alt="Placeholder 2"
@@ -64,8 +67,8 @@ export default function Features() {
           </div>
         </div>
 
-        <div className="flex px-8 pb-10">
-          <div className="flex w-1/2 flex-shrink flex-col items-center justify-evenly py-16">
+        <div className="flex flex-col px-8 pb-10 lg:flex-row lg:gap-6">
+          <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
             <h2 className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
               Optimized Timetable Creation
             </h2>
@@ -74,7 +77,7 @@ export default function Features() {
               optimized timetable schedule for your organization.
             </p>
           </div>
-          <div className="flex w-1/2 items-center justify-center">
+          <div className="flex items-center justify-center lg:w-1/2">
             <Image
               src="/placeholder2.png"
               alt="Placeholder 2"
@@ -84,8 +87,8 @@ export default function Features() {
           </div>
         </div>
 
-        <div className="flex flex-row-reverse px-8 pb-10">
-          <div className="flex w-1/2 flex-shrink flex-col items-center justify-evenly py-16">
+        <div className="flex flex-col px-8 pb-10 lg:flex-row-reverse lg:gap-6">
+          <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
             <h2 className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
               Priority Weights
             </h2>
@@ -95,7 +98,7 @@ export default function Features() {
               weights while creating most-optimized timetable.
             </p>
           </div>
-          <div className="flex w-1/2 items-center justify-center">
+          <div className="flex items-center justify-center lg:w-1/2">
             <Image
               src="/placeholder2.png"
               alt="Placeholder 2"
@@ -105,8 +108,8 @@ export default function Features() {
           </div>
         </div>
 
-        <div className="flex px-8 pb-10">
-          <div className="flex w-1/2 flex-shrink flex-col items-center justify-evenly py-16">
+        <div className="flex flex-col px-8 pb-10 lg:flex-row lg:gap-6">
+          <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
             <h2 className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
               Modern Interface
             </h2>
@@ -117,7 +120,7 @@ export default function Features() {
               our algorithm.
             </p>
           </div>
-          <div className="flex w-1/2 items-center justify-center">
+          <div className="flex items-center justify-center lg:w-1/2">
             <Image
               src="/placeholder2.png"
               alt="Placeholder 2"

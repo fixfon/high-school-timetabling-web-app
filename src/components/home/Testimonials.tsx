@@ -14,8 +14,8 @@ export default function Testimonials() {
           Managers
         </h3>
       </div>
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col justify-center py-12 text-secondary">
-        <div className="mb-8 ml-32 h-min w-[550px] rounded-3xl bg-background-dark px-6 py-4 shadow-2xl drop-shadow-2xl">
+      <div className="container mx-auto px-12 lg:px-0 flex w-full flex-col justify-center py-12 text-secondary">
+        <div className="mb-8 lg:ml-32 h-min rounded-3xl bg-background-dark px-6 py-4 shadow-2xl drop-shadow-2xl lg:w-[550px]">
           <p className="italic opacity-90">
             &quot;Our school has been using this application for several
             semesters now, and it has greatly simplified our timetable
@@ -41,7 +41,7 @@ export default function Testimonials() {
           </div>
         </div>
 
-        <div className="mb-8 mr-32 h-min w-[550px] self-end rounded-3xl bg-background-dark px-6 py-4 shadow-2xl drop-shadow-2xl">
+        <div className="mb-8 lg:mr-32 h-min self-end rounded-3xl bg-background-dark px-6 py-4 shadow-2xl drop-shadow-2xl lg:w-[550px]">
           <p className="italic opacity-90">
             &quot;As a teacher, I appreciate how this application allows me to
             specify my work preferences and availability. It is great to have
@@ -65,7 +65,7 @@ export default function Testimonials() {
           </div>
         </div>
 
-        <div className="ml-32 h-min w-[550px] rounded-3xl bg-background-dark px-6 py-4 shadow-2xl drop-shadow-2xl">
+        <div className="lg:ml-32 h-min rounded-3xl bg-background-dark px-6 py-4 shadow-2xl drop-shadow-2xl lg:w-[550px]">
           <p className="italic opacity-90">
             &quot;Since our school started using this application, my schedule
             has been much more organized and easier to follow. I always know

@@ -16,15 +16,15 @@ export default function Hero() {
     });
   };
   return (
-    <div className="mx-auto flex w-full max-w-[1440px] gap-2 py-8">
-      <div className="flex w-1/2 flex-col items-center justify-center gap-12">
-        <h1 className="text-center text-5xl font-extrabold">
+    <div className="container mx-auto flex w-full flex-col items-center justify-center gap-12 py-8 lg:flex-row lg:gap-2">
+      <div className="flex flex-col items-center justify-center gap-12 lg:w-1/2">
+        <h1 className="px-4 text-center text-5xl font-extrabold lg:px-0">
           Transform the way you schedule high school classes with{" "}
           <span className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-transparent">
             TimetablePro
           </span>
         </h1>
-        <h3 className="text-xl">
+        <h3 className="px-8 text-xl lg:px-0">
           Smart, simple, and effective scheduling for a better education. Say
           goodbye to the headache of juggling teacher schedules and classroom
           assignments.
@@ -50,7 +50,7 @@ export default function Hero() {
           </ul>
         </div>
       </div>
-      <div className="w-1/2">
+      <div className="lg:w-1/2">
         <Image src="/hero_1.svg" priority alt="Hero" width={566} height={400} />
       </div>
     </div>
