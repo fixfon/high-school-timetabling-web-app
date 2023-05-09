@@ -7,6 +7,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { BiShow, BiHide } from "react-icons/bi";
 import { useState } from "react";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 const Login: NextPage = (props) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -36,17 +39,22 @@ const Login: NextPage = (props) => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="flex h-screen w-full items-center bg-background-light text-lg text-text-dark/70">
+      <div
+        className={
+          `flex h-screen w-full items-center bg-background-light text-lg text-text-dark/70 ` +
+          inter.className
+        }
+      >
         <div className="flex min-h-full w-full flex-col px-4 py-12 lg:w-3/5 lg:px-8">
           <Image
-            className="md:mt-0 mt-8"
+            className="mt-8 md:mt-0"
             src="/placeholder4.png"
             alt="Logo Placeholder"
             width={300}
             height={70}
           />
           <div className="my-auto flex h-full max-w-[80%] flex-col self-center">
-            <div className="mt-4 md:mt-0 pb-12 md:pb-32">
+            <div className="mt-4 pb-12 md:mt-0 md:pb-32">
               <h1 className="text-5xl font-extrabold text-primary">Login</h1>
             </div>
             <div className="flex flex-col gap-4 pb-8 md:pb-16">
@@ -62,7 +70,7 @@ const Login: NextPage = (props) => {
             <div>
               <form
                 noValidate
-                className="mx-auto flex md:w-3/5 flex-col items-center justify-center text-base"
+                className="mx-auto flex flex-col items-center justify-center text-base md:w-3/5"
                 onSubmit={handleSubmit(onSubmit)}
               >
                 <div className="mb-4 flex w-full flex-col">
@@ -113,7 +121,7 @@ const Login: NextPage = (props) => {
 
                 <button
                   type="submit"
-                  className="mt-8 md:mt-16 w-4/5 rounded-lg bg-primary py-1 text-lg font-medium text-secondary transition-all hover:bg-button-hover-primary"
+                  className="mt-8 w-4/5 rounded-lg bg-primary py-1 text-lg font-medium text-secondary transition-all hover:bg-button-hover-primary md:mt-16"
                 >
                   Login
                 </button>
