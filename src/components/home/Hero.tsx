@@ -30,7 +30,7 @@ export default function Hero() {
           assignments.
         </h3>
         <div>
-          <ul className="flex items-center justify-center gap-24">
+          <ul className="flex md:flex-row flex-col items-center justify-center gap-8 md:gap-24">
             <li>
               <Link href="/register">
                 <button className="rounded-lg bg-primary px-4 py-2 text-2xl font-bold text-text-light transition-colors hover:bg-button-hover-primary">
