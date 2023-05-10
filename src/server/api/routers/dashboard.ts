@@ -9,9 +9,15 @@ import { ClassLevel } from "@prisma/client";
 
 export const dashboardRouter = createTRPCRouter({
   getTerms: publicProcedure.query(async ({ ctx }) => {
-    const terms = await ctx.prisma.term.findMany({
+    const terms = await ctx.prisma.teacher.findMany({
       where: {
-        organizationId: "1",
+        Class: {
+          some: {
+            Lesson: {
+              name: "Math",
+            },
+          },
+        },
       },
     });
 

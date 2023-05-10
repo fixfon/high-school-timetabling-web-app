@@ -6,28 +6,64 @@ import { useForm } from "react-hook-form";
 import Image from "next/image";
 import Link from "next/link";
 import { BiShow, BiHide } from "react-icons/bi";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Inter } from "next/font/google";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Oval } from "react-loader-spinner";
+import FullPageLoader from "~/components/loaders/FullPage";
 
 const inter = Inter({ subsets: ["latin"] });
 
 const Login: NextPage = (props) => {
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const { data: session, status } = useSession();
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: LoginInput) => {
-    return console.log(data);
-  };
+  const onSubmit = useCallback(
+    async (data: LoginInput) => {
+      try {
+        const res = await signIn("credentials", {
+          callbackUrl: "/dashboard",
+          redirect: false,
+          ...data,
+        });
+
+        if (!res?.ok) {
+          if (res?.error === "User not found") setError("User not found");
+          else if (res?.error === "Invalid password")
+            setError("Invalid password");
+          else setError("Something went wrong");
+        }
+
+        if (res?.ok && res?.url) {
+          router.push(res.url);
+        }
+      } catch (e) {
+        setError("Something went wrong");
+      }
+    },
+    [router]
+  );
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
   };
+
+  useEffect(() => {
+    if (session) {
+      router.push("/dashboard");
+    }
+  }, [session, router]);
 
   return (
     <>
@@ -39,6 +75,7 @@ const Login: NextPage = (props) => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      {status === "loading" && <FullPageLoader />}
       <div
         className={
           `flex h-screen w-full items-center bg-background-light text-lg text-text-dark/70 ` +
@@ -76,13 +113,18 @@ const Login: NextPage = (props) => {
                 <div className="mb-4 flex w-full flex-col">
                   <label>Email</label>
                   <input
-                    className="rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic"
+                    disabled={isSubmitting}
+                    className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic ${
+                      errors.email?.message
+                        ? "border-red-500 outline-red-500"
+                        : "border-text-dark/40 outline-background-dark/70"
+                    }`}
                     placeholder="test@test.com"
                     type="email"
                     {...register("email")}
                   />
                   {errors.email?.message && (
-                    <span className="font-medium text-red-500">
+                    <span className="text-sm font-medium text-red-500">
                       Invalid email
                     </span>
                   )}
@@ -90,8 +132,13 @@ const Login: NextPage = (props) => {
                 <div className="relative flex w-full flex-col">
                   <label>Password</label>
                   <input
+                    disabled={isSubmitting}
                     placeholder="your very secret password"
-                    className="rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic"
+                    className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic ${
+                      errors.password?.message
+                        ? "border-red-500 outline-red-500"
+                        : "border-text-dark/40 outline-background-dark/70"
+                    }`}
                     type={showPassword ? "text" : "password"}
                     {...register("password")}
                   />
@@ -108,7 +155,7 @@ const Login: NextPage = (props) => {
                   )}
                 </div>
                 {errors.password?.message && (
-                  <span className="self-start font-medium text-red-500">
+                  <span className="self-start text-sm font-medium text-red-500">
                     Password must contain at least 6 characters
                   </span>
                 )}
@@ -119,11 +166,32 @@ const Login: NextPage = (props) => {
                   Reset Password
                 </Link>
 
+                {error && (
+                  <span className="mt-4 font-medium text-red-500">{error}</span>
+                )}
+
                 <button
+                  disabled={isSubmitting}
                   type="submit"
-                  className="mt-8 w-4/5 rounded-lg bg-primary py-1 text-lg font-medium text-secondary transition-all hover:bg-button-hover-primary md:mt-16"
+                  className={`flex w-4/5 items-center justify-center gap-2 rounded-lg bg-primary py-1 text-lg font-medium text-secondary transition-all hover:bg-button-hover-primary disabled:bg-button-disabled ${
+                    error ? "mt-4 md:mt-8" : "mt-8 md:mt-14"
+                  }`}
                 >
-                  Login
+                  {isSubmitting ? (
+                    <>
+                      <Oval
+                        height={20}
+                        width={20}
+                        strokeWidth={4}
+                        strokeWidthSecondary={3}
+                        color="#5090FF"
+                        secondaryColor="#FFFFFF"
+                      />
+                      <span>Login</span>
+                    </>
+                  ) : (
+                    "Login"
+                  )}
                 </button>
               </form>
               <h4 className="mt-4 text-center text-base font-medium">

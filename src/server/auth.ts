@@ -7,8 +7,10 @@ import {
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "~/server/db";
 import { env } from "~/env.mjs";
-// import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { GlobalRole } from "@prisma/client";
+import type { GlobalRole, MemberRole } from "@prisma/client";
+import loginSchema from "~/schemas/login";
+import { TRPCError } from "@trpc/server";
+import { verify } from "argon2";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -21,13 +23,13 @@ declare module "next-auth" {
     user: {
       id: string;
       role: GlobalRole;
-      // ...other properties
+      memberRole?: MemberRole;
     } & DefaultSession["user"];
   }
 
   interface User {
     role: GlobalRole;
-    // ...other properties
+    memberRole?: MemberRole;
   }
 }
 
@@ -35,24 +37,25 @@ declare module "next-auth/jwt" {
   interface DefaultJWT {
     id: string;
     role: GlobalRole;
-    idToken?: string;
+    memberRole?: MemberRole;
   }
 }
 
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    jwt: async ({ token, user }) => {
-
+    jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.role = user.role;
+        token.memberRole = user.memberRole;
       }
 
       return token;
     },
-    session({ session, token, user }) {
+    session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id as string;
+        session.user.id = token.id;
       }
 
       return session;
@@ -60,9 +63,8 @@ export const authOptions: NextAuthOptions = {
   },
   secret: env.NEXTAUTH_SECRET,
   pages: {
-    signIn: "/auth/login",
-    newUser: "/auth/test",
-    error: "/auth/login",
+    signIn: "/login",
+    newUser: "/dashboard/setup",
   },
   providers: [
     Credentials({
@@ -71,24 +73,38 @@ export const authOptions: NextAuthOptions = {
         email: {
           label: "Email",
           type: "email",
-          placeholder: "jsmith@gmail.com",
+          placeholder: "timetable@pro.com",
         },
         password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
+        const creds = await loginSchema.parseAsync(credentials);
+
         const user = await prisma.user.findFirst({
-          where: { id: "1" },
+          where: { email: creds.email },
         });
 
         if (!user) {
-          return null;
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `User not found`,
+          });
+        }
+
+        const isValidPassword = await verify(user.password, creds.password);
+
+        if (!isValidPassword) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid password",
+          });
         }
 
         return {
           id: user.id,
-          role: user.globalRole,
           email: user.email,
-          username: user.username,
+          role: user.globalRole,
+          memberRole: user.memberRole ?? undefined,
         };
       },
     }),

@@ -6,25 +6,62 @@ import { useForm } from "react-hook-form";
 import Image from "next/image";
 import Link from "next/link";
 import { BiShow, BiHide } from "react-icons/bi";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Inter } from "next/font/google";
+import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
+import { api } from "~/utils/api";
+import FullPageLoader from "~/components/loaders/FullPage";
+import { Oval } from "react-loader-spinner";
+import type { LoginInput } from "~/schemas/login";
 
 const inter = Inter({ subsets: ["latin"] });
 
 const Register: NextPage = (props) => {
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const router = useRouter();
+  const { data: session, status } = useSession();
+
+  const { mutateAsync, isLoading: isRegistering } =
+    api.register.register.useMutation({
+      onSuccess: async (res) => {
+        if (res.status === "ok") {
+          const creds: LoginInput = {
+            email: res.email,
+            password: res.password,
+          };
+          const signedIn = await signIn("credentials", {
+            callbackUrl: "/dashboard",
+            redirect: false,
+            ...creds,
+          });
+
+          if (!signedIn?.ok) router.push("/login");
+        }
+      },
+      onError: (err) => {
+        setError(err.message);
+      },
+    });
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = (data: RegisterInput) => {
-    return console.log(data);
-  };
+  const onSubmit = useCallback(
+    async (data: RegisterInput) => {
+      try {
+        await mutateAsync(data);
+      } catch (err) {}
+    },
+    [mutateAsync]
+  );
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
@@ -33,6 +70,12 @@ const Register: NextPage = (props) => {
   const toggleConfirmPassword = () => {
     setShowConfirmPassword((prev) => !prev);
   };
+
+  useEffect(() => {
+    if (session) {
+      router.push("/dashboard");
+    }
+  }, [session, router]);
 
   return (
     <>
@@ -44,6 +87,7 @@ const Register: NextPage = (props) => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      {status === "loading" && <FullPageLoader />}
       <div
         className={
           `flex h-full min-h-screen w-full items-center bg-background-light text-lg text-text-dark/70 md:h-screen ` +
@@ -81,10 +125,11 @@ const Register: NextPage = (props) => {
                   <div className="mb-4 flex w-full flex-col self-start">
                     <label>Name</label>
                     <input
-                      className={`rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic focus:outline ${
+                      disabled={isSubmitting || isRegistering}
+                      className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic focus:outline disabled:opacity-60 ${
                         errors.name?.message
                           ? "border-red-500 outline-red-500"
-                          : "outline-background-dark/70"
+                          : "border-text-dark/40 outline-background-dark/70"
                       }`}
                       type="text"
                       {...register("name")}
@@ -98,10 +143,11 @@ const Register: NextPage = (props) => {
                   <div className="mb-4 flex w-full flex-col self-start">
                     <label>Surname</label>
                     <input
-                      className={`rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic ${
+                      disabled={isSubmitting || isRegistering}
+                      className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                         errors.surname?.message
                           ? "border-red-500 outline-red-500"
-                          : "outline-background-dark/70"
+                          : "border-text-dark/40 outline-background-dark/70"
                       }`}
                       type="text"
                       {...register("surname")}
@@ -117,10 +163,11 @@ const Register: NextPage = (props) => {
                   <div className="mb-4 flex w-full flex-col self-start md:w-1/2">
                     <label>Email</label>
                     <input
-                      className={`rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic ${
+                      disabled={isSubmitting || isRegistering}
+                      className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                         errors.email?.message
                           ? "border-red-500 outline-red-500"
-                          : "outline-background-dark/70"
+                          : "border-text-dark/40 outline-background-dark/70"
                       }`}
                       type="email"
                       {...register("email")}
@@ -134,20 +181,19 @@ const Register: NextPage = (props) => {
                   <div className="mb-4 flex w-full flex-col self-start md:w-1/2">
                     <label>Phone</label>
                     <div
-                      className={`flex w-full rounded-lg border border-text-dark/40 bg-background-light  py-0.5 ${
+                      className={`flex w-full rounded-lg border  bg-background-light  py-0.5 ${
                         errors.phone?.message
-                          ? "border-red-500 outline-red-500"
-                          : "outline-background-dark/70"
+                          ? "border-red-500"
+                          : "border-text-dark/40"
                       }`}
                     >
                       <span className="select-none border-r border-text-dark/40 px-1">
                         +90
                       </span>
                       <input
-                        min={10}
-                        max={10}
-                        inputMode="numeric"
-                        className="w-full rounded-lg border-none bg-background-light px-1 placeholder:select-none placeholder:italic focus:border-none focus:outline-none"
+                        disabled={isSubmitting || isRegistering}
+                        maxLength={10}
+                        className="w-full rounded-lg border-none bg-background-light px-1 placeholder:select-none placeholder:italic focus:border-none focus:outline-none disabled:opacity-60"
                         type="tel"
                         {...register("phone")}
                       />
@@ -164,10 +210,11 @@ const Register: NextPage = (props) => {
                     <div className="relative flex w-full flex-col">
                       <label>Password</label>
                       <input
-                        className={`rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic ${
+                        disabled={isSubmitting || isRegistering}
+                        className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                           errors.password?.message
                             ? "border-red-500 outline-red-500"
-                            : "outline-background-dark/70"
+                            : "border-text-dark/40 outline-background-dark/70"
                         }`}
                         type={showPassword ? "text" : "password"}
                         {...register("password")}
@@ -194,10 +241,11 @@ const Register: NextPage = (props) => {
                     <div className="relative flex w-full flex-col">
                       <label>Confirm Password</label>
                       <input
-                        className={`rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic ${
+                        disabled={isSubmitting || isRegistering}
+                        className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                           errors.confirmPassword?.message
                             ? "border-red-500 outline-red-500"
-                            : "outline-background-dark/70"
+                            : "border-text-dark/40 outline-background-dark/70"
                         }`}
                         type={showConfirmPassword ? "text" : "password"}
                         {...register("confirmPassword")}
@@ -224,10 +272,11 @@ const Register: NextPage = (props) => {
                 <div className="flex w-3/5 flex-col">
                   <label>Organization Name</label>
                   <input
-                    className={`rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic ${
+                    disabled={isSubmitting || isRegistering}
+                    className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                       errors.organization?.message
                         ? "border-red-500 outline-red-500"
-                        : "outline-background-dark/70"
+                        : "border-text-dark/40 outline-background-dark/70"
                     }`}
                     type="text"
                     {...register("organization")}
@@ -241,7 +290,8 @@ const Register: NextPage = (props) => {
                 <div className="self-start">
                   <label className="mt-6 flex items-center gap-2">
                     <input
-                      className="h-4 w-4 rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5"
+                      disabled={isSubmitting || isRegistering}
+                      className="h-4 w-4 rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 disabled:opacity-60"
                       type="checkbox"
                       {...register("terms")}
                     />
@@ -264,7 +314,8 @@ const Register: NextPage = (props) => {
                 <div className="self-start">
                   <label className="mt-1 flex items-center gap-2">
                     <input
-                      className="h-4 w-4 rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5"
+                      disabled={isSubmitting || isRegistering}
+                      className="h-4 w-4 rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 disabled:opacity-60"
                       type="checkbox"
                       {...register("marketing")}
                     />
@@ -275,11 +326,32 @@ const Register: NextPage = (props) => {
                   </label>
                 </div>
 
+                {error && (
+                  <span className="mt-4 font-medium text-red-500">{error}</span>
+                )}
+
                 <button
+                  disabled={isSubmitting || isRegistering}
                   type="submit"
-                  className="mt-8 w-3/5 rounded-lg bg-primary py-1 text-lg font-medium text-secondary transition-all hover:bg-button-hover-primary md:mt-10"
+                  className={`flex w-3/5 items-center justify-center gap-2 rounded-lg bg-primary py-1 text-lg font-medium text-secondary transition-all hover:bg-button-hover-primary disabled:bg-button-disabled ${
+                    error ? "mt-4" : "mt-8 "
+                  }`}
                 >
-                  Register
+                  {isSubmitting || isRegistering ? (
+                    <>
+                      <Oval
+                        height={20}
+                        width={20}
+                        strokeWidth={4}
+                        strokeWidthSecondary={3}
+                        color="#5090FF"
+                        secondaryColor="#FFFFFF"
+                      />
+                      <span>Register</span>
+                    </>
+                  ) : (
+                    "Register"
+                  )}
                 </button>
               </form>
               <h4 className="mt-4 text-center text-base font-medium">

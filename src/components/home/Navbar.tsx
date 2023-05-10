@@ -3,10 +3,12 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { HiMenu } from "react-icons/hi";
 import { IoClose } from "react-icons/io5";
+import { signOut, useSession } from "next-auth/react";
 
 export default function Navbar() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const { data: session, status } = useSession();
 
   return (
     <nav
@@ -88,25 +90,51 @@ export default function Navbar() {
           </ul>
 
           <ul className="flex flex-col items-center justify-center gap-8 text-2xl font-semibold lg:flex-row lg:text-xl ">
-            <li>
-              <Link
-                href="/login"
-                className="transition-colors hover:text-primary"
-              >
-                Login
-              </Link>
-            </li>
-            <li>
-              <Link href="/register">
-                <button
-                  type="button"
-                  className="rounded-lg bg-primary px-4 py-2 text-text-light transition-colors hover:bg-button-hover-primary
+            {session?.user && status === "authenticated" ? (
+              <>
+                <li>
+                  <button
+                    onClick={() => signOut({ redirect: false })}
+                    className="transition-colors hover:text-primary"
+                  >
+                    Logout
+                  </button>
+                </li>
+                <li>
+                  <Link href="/dashboard">
+                    <button
+                      type="button"
+                      className="rounded-lg bg-primary px-4 py-2 text-text-light transition-colors hover:bg-button-hover-primary
                   "
-                >
-                  Register
-                </button>
-              </Link>
-            </li>
+                    >
+                      Dashboard
+                    </button>
+                  </Link>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link
+                    href="/login"
+                    className="transition-colors hover:text-primary"
+                  >
+                    Login
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/register">
+                    <button
+                      type="button"
+                      className="rounded-lg bg-primary px-4 py-2 text-text-light transition-colors hover:bg-button-hover-primary
+                  "
+                    >
+                      Register
+                    </button>
+                  </Link>
+                </li>
+              </>
+            )}
           </ul>
         </div>
       </div>
