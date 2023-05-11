@@ -26,7 +26,7 @@ export default function Features() {
       >
         <div className="flex flex-col px-8 pb-10 lg:flex-row lg:gap-6">
           <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
-            <h2 className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
+            <h2 className="bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-4xl font-extrabold text-transparent">
               Manage Teachers
             </h2>
             <p>
@@ -48,7 +48,7 @@ export default function Features() {
 
         <div className="flex flex-col px-8 pb-10 lg:flex-row-reverse lg:gap-6">
           <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
-            <h2 className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
+            <h2 className="bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-4xl font-extrabold text-transparent">
               Manage Classrooms
             </h2>
             <p>
@@ -69,7 +69,7 @@ export default function Features() {
 
         <div className="flex flex-col px-8 pb-10 lg:flex-row lg:gap-6">
           <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
-            <h2 className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
+            <h2 className="bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-4xl font-extrabold text-transparent">
               Optimized Timetable Creation
             </h2>
             <p>
@@ -89,7 +89,7 @@ export default function Features() {
 
         <div className="flex flex-col px-8 pb-10 lg:flex-row-reverse lg:gap-6">
           <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
-            <h2 className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
+            <h2 className="bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-4xl font-extrabold text-transparent">
               Priority Weights
             </h2>
             <p>
@@ -110,7 +110,7 @@ export default function Features() {
 
         <div className="flex flex-col px-8 pb-10 lg:flex-row lg:gap-6">
           <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
-            <h2 className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
+            <h2 className="bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-4xl font-extrabold text-transparent">
               Modern Interface
             </h2>
             <p>

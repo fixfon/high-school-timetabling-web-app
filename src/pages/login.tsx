@@ -78,7 +78,7 @@ const Login: NextPage = (props) => {
       {status === "loading" && <FullPageLoader />}
       <div
         className={
-          `flex h-screen w-full items-center bg-background-light text-lg text-text-dark/70 ` +
+          `flex h-screen w-full items-center text-lg text-foreground/70 ` +
           inter.className
         }
       >
@@ -114,10 +114,10 @@ const Login: NextPage = (props) => {
                   <label>Email</label>
                   <input
                     disabled={isSubmitting}
-                    className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic ${
+                    className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic ${
                       errors.email?.message
                         ? "border-red-500 outline-red-500"
-                        : "border-text-dark/40 outline-background-dark/70"
+                        : "outline-background-dark/70 border-border"
                     }`}
                     placeholder="test@test.com"
                     type="email"
@@ -134,10 +134,10 @@ const Login: NextPage = (props) => {
                   <input
                     disabled={isSubmitting}
                     placeholder="your very secret password"
-                    className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic ${
+                    className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic ${
                       errors.password?.message
                         ? "border-red-500 outline-red-500"
-                        : "border-text-dark/40 outline-background-dark/70"
+                        : "outline-background-dark/70 border-border"
                     }`}
                     type={showPassword ? "text" : "password"}
                     {...register("password")}
@@ -145,12 +145,12 @@ const Login: NextPage = (props) => {
                   {showPassword ? (
                     <BiHide
                       onClick={togglePassword}
-                      className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-text-dark/40"
+                      className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-foreground/40"
                     />
                   ) : (
                     <BiShow
                       onClick={togglePassword}
-                      className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-text-dark/40"
+                      className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-foreground/40"
                     />
                   )}
                 </div>
@@ -160,7 +160,7 @@ const Login: NextPage = (props) => {
                   </span>
                 )}
                 <Link
-                  className="mt-4 self-end text-primary transition-colors hover:text-button-hover-primary"
+                  className="mt-4 self-end text-primary transition-colors hover:text-primary/80"
                   href="#"
                 >
                   Reset Password
@@ -173,7 +173,7 @@ const Login: NextPage = (props) => {
                 <button
                   disabled={isSubmitting}
                   type="submit"
-                  className={`flex w-4/5 items-center justify-center gap-2 rounded-lg bg-primary py-1 text-lg font-medium text-secondary transition-all hover:bg-button-hover-primary disabled:bg-button-disabled ${
+                  className={`flex w-4/5 items-center justify-center gap-2 rounded-lg bg-primary py-1 text-lg font-medium text-secondary transition-all hover:bg-primary/80 disabled:bg-primary/50 ${
                     error ? "mt-4 md:mt-8" : "mt-8 md:mt-14"
                   }`}
                 >
@@ -198,7 +198,7 @@ const Login: NextPage = (props) => {
                 Don&lsquo;t you have an account yet?{" "}
                 <Link
                   href="/register"
-                  className="text-primary hover:text-button-hover-primary"
+                  className="text-primary hover:text-primary/80"
                 >
                   Join TimetablePro
                 </Link>{" "}

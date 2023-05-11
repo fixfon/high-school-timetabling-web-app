@@ -90,7 +90,7 @@ const Register: NextPage = (props) => {
       {status === "loading" && <FullPageLoader />}
       <div
         className={
-          `flex h-full min-h-screen w-full items-center bg-background-light text-lg text-text-dark/70 md:h-screen ` +
+          `flex h-full min-h-screen w-full items-center text-lg text-foreground/70 md:h-screen ` +
           inter.className
         }
       >
@@ -103,7 +103,9 @@ const Register: NextPage = (props) => {
           />
           <div className="my-auto flex h-full flex-col self-center xl:max-w-[80%]">
             <div className="mt-4 pb-4 md:mt-0 md:pb-12">
-              <h1 className="text-5xl font-extrabold text-primary">Register</h1>
+              <h1 className="text-5xl font-extrabold text-primary">
+                Register
+              </h1>
             </div>
             <div className="flex flex-col gap-4 pb-4 md:pb-12">
               <h3 className="text-xl font-medium text-primary">
@@ -126,10 +128,10 @@ const Register: NextPage = (props) => {
                     <label>Name</label>
                     <input
                       disabled={isSubmitting || isRegistering}
-                      className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic focus:outline disabled:opacity-60 ${
+                      className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic focus:outline disabled:opacity-60 ${
                         errors.name?.message
                           ? "border-red-500 outline-red-500"
-                          : "border-text-dark/40 outline-background-dark/70"
+                          : "border-border outline-background-dark/70"
                       }`}
                       type="text"
                       {...register("name")}
@@ -144,10 +146,10 @@ const Register: NextPage = (props) => {
                     <label>Surname</label>
                     <input
                       disabled={isSubmitting || isRegistering}
-                      className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
+                      className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                         errors.surname?.message
                           ? "border-red-500 outline-red-500"
-                          : "border-text-dark/40 outline-background-dark/70"
+                          : "border-border outline-background-dark/70"
                       }`}
                       type="text"
                       {...register("surname")}
@@ -164,10 +166,10 @@ const Register: NextPage = (props) => {
                     <label>Email</label>
                     <input
                       disabled={isSubmitting || isRegistering}
-                      className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
+                      className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                         errors.email?.message
                           ? "border-red-500 outline-red-500"
-                          : "border-text-dark/40 outline-background-dark/70"
+                          : "border-border outline-background-dark/70"
                       }`}
                       type="email"
                       {...register("email")}
@@ -181,19 +183,19 @@ const Register: NextPage = (props) => {
                   <div className="mb-4 flex w-full flex-col self-start md:w-1/2">
                     <label>Phone</label>
                     <div
-                      className={`flex w-full rounded-lg border  bg-background-light  py-0.5 ${
+                      className={`flex w-full rounded-lg border bg-background  py-0.5 ${
                         errors.phone?.message
                           ? "border-red-500"
-                          : "border-text-dark/40"
+                          : "border-border"
                       }`}
                     >
-                      <span className="select-none border-r border-text-dark/40 px-1">
+                      <span className="select-none border-r border-border px-1">
                         +90
                       </span>
                       <input
                         disabled={isSubmitting || isRegistering}
                         maxLength={10}
-                        className="w-full rounded-lg border-none bg-background-light px-1 placeholder:select-none placeholder:italic focus:border-none focus:outline-none disabled:opacity-60"
+                        className="w-full rounded-lg border-none bg-background px-1 placeholder:select-none placeholder:italic focus:border-none focus:outline-none disabled:opacity-60"
                         type="tel"
                         {...register("phone")}
                       />
@@ -211,10 +213,10 @@ const Register: NextPage = (props) => {
                       <label>Password</label>
                       <input
                         disabled={isSubmitting || isRegistering}
-                        className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
+                        className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                           errors.password?.message
                             ? "border-red-500 outline-red-500"
-                            : "border-text-dark/40 outline-background-dark/70"
+                            : "border-border outline-background-dark/70"
                         }`}
                         type={showPassword ? "text" : "password"}
                         {...register("password")}
@@ -222,12 +224,12 @@ const Register: NextPage = (props) => {
                       {showPassword ? (
                         <BiHide
                           onClick={togglePassword}
-                          className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-text-dark/40"
+                          className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-foreground/40"
                         />
                       ) : (
                         <BiShow
                           onClick={togglePassword}
-                          className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-text-dark/40"
+                          className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-foreground/40"
                         />
                       )}
                     </div>
@@ -242,10 +244,10 @@ const Register: NextPage = (props) => {
                       <label>Confirm Password</label>
                       <input
                         disabled={isSubmitting || isRegistering}
-                        className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
+                        className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                           errors.confirmPassword?.message
                             ? "border-red-500 outline-red-500"
-                            : "border-text-dark/40 outline-background-dark/70"
+                            : "border-border outline-background-dark/70"
                         }`}
                         type={showConfirmPassword ? "text" : "password"}
                         {...register("confirmPassword")}
@@ -253,12 +255,12 @@ const Register: NextPage = (props) => {
                       {showConfirmPassword ? (
                         <BiHide
                           onClick={toggleConfirmPassword}
-                          className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-text-dark/40"
+                          className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-foreground/40"
                         />
                       ) : (
                         <BiShow
                           onClick={toggleConfirmPassword}
-                          className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-text-dark/40"
+                          className="absolute bottom-1 right-3 cursor-pointer text-xl transition-all hover:text-foreground/40"
                         />
                       )}
                     </div>
@@ -273,10 +275,10 @@ const Register: NextPage = (props) => {
                   <label>Organization Name</label>
                   <input
                     disabled={isSubmitting || isRegistering}
-                    className={`rounded-lg border bg-background-light px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
+                    className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                       errors.organization?.message
                         ? "border-red-500 outline-red-500"
-                        : "border-text-dark/40 outline-background-dark/70"
+                        : "border-border outline-background-dark/70"
                     }`}
                     type="text"
                     {...register("organization")}
@@ -291,7 +293,7 @@ const Register: NextPage = (props) => {
                   <label className="mt-6 flex items-center gap-2">
                     <input
                       disabled={isSubmitting || isRegistering}
-                      className="h-4 w-4 rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 disabled:opacity-60"
+                      className="h-4 w-4 rounded-lg border border-border bg-background px-3 py-0.5 disabled:opacity-60"
                       type="checkbox"
                       {...register("terms")}
                     />
@@ -299,7 +301,7 @@ const Register: NextPage = (props) => {
                       I accept the{" "}
                       <Link
                         href="/privacy"
-                        className="text-primary hover:text-button-hover-primary"
+                        className="text-primary hover:text-primary/80"
                       >
                         Terms, Privacy Policy
                       </Link>
@@ -315,7 +317,7 @@ const Register: NextPage = (props) => {
                   <label className="mt-1 flex items-center gap-2">
                     <input
                       disabled={isSubmitting || isRegistering}
-                      className="h-4 w-4 rounded-lg border border-text-dark/40 bg-background-light px-3 py-0.5 disabled:opacity-60"
+                      className="h-4 w-4 rounded-lg border border-border bg-background px-3 py-0.5 disabled:opacity-60"
                       type="checkbox"
                       {...register("marketing")}
                     />
@@ -333,7 +335,7 @@ const Register: NextPage = (props) => {
                 <button
                   disabled={isSubmitting || isRegistering}
                   type="submit"
-                  className={`flex w-3/5 items-center justify-center gap-2 rounded-lg bg-primary py-1 text-lg font-medium text-secondary transition-all hover:bg-button-hover-primary disabled:bg-button-disabled ${
+                  className={`flex w-3/5 items-center justify-center gap-2 rounded-lg bg-primary py-1 text-lg font-medium text-primary-foreground transition-all hover:bg-primary/80 disabled:bg-primary/50 ${
                     error ? "mt-4" : "mt-8 "
                   }`}
                 >
@@ -358,7 +360,7 @@ const Register: NextPage = (props) => {
                 Are you a teacher? Do you have an account?{" "}
                 <Link
                   href="/login"
-                  className="text-primary hover:text-button-hover-primary"
+                  className="text-primary hover:text-primary/80"
                 >
                   Login TimetablePro
                 </Link>

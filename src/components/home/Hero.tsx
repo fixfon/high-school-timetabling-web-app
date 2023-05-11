@@ -20,7 +20,7 @@ export default function Hero() {
       <div className="flex flex-col items-center justify-center gap-12 lg:w-1/2">
         <h1 className="px-4 text-center text-5xl font-extrabold lg:px-0">
           Transform the way you schedule high school classes with{" "}
-          <span className="bg-gradient-to-r from-background-dark via-primary to-complementary bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent">
             TimetablePro
           </span>
         </h1>
@@ -30,10 +30,10 @@ export default function Hero() {
           assignments.
         </h3>
         <div>
-          <ul className="flex md:flex-row flex-col items-center justify-center gap-8 md:gap-24">
+          <ul className="flex flex-col items-center justify-center gap-8 md:flex-row md:gap-24">
             <li>
               <Link href="/register">
-                <button className="rounded-lg bg-primary px-4 py-2 text-2xl font-bold text-text-light transition-colors hover:bg-button-hover-primary">
+                <button className="rounded-lg bg-primary px-4 py-2 text-2xl font-bold text-primary-foreground transition-colors hover:bg-primary/80">
                   Get Started
                 </button>
               </Link>

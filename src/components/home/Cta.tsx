@@ -3,13 +3,13 @@ import Link from "next/link";
 
 export default function CTA() {
   return (
-    <div className="mx-auto flex w-full flex-col items-center justify-center bg-background-dark px-8 py-12 text-center text-secondary lg:px-0">
+    <div className="mx-auto flex w-full flex-col items-center justify-center bg-foreground px-8 py-12 text-center text-secondary lg:px-0">
       <h1 className="mb-6 text-3xl font-extrabold md:text-4xl lg:text-5xl">
         FOCUS ON YOUR CREATIVITY
       </h1>
       <h3 className="mb-10 text-xl font-bold lg:text-2xl">
         Let{" "}
-        <span className="bg-gradient-to-r from-primary via-secondary to-complementary bg-clip-text text-transparent">
+        <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
           TimetablePro
         </span>{" "}
         Handle Your Optimization

@@ -29,7 +29,7 @@ export default function Navbar() {
             aria-controls="navbar-def"
             onClick={() => setIsOpen(false)}
           >
-            <IoClose className="h-10 w-10 text-text-dark transition-all hover:text-primary" />
+            <IoClose className="h-10 w-10 text-foreground transition-all hover:text-primary" />
           </button>
         ) : (
           <button
@@ -38,7 +38,7 @@ export default function Navbar() {
             aria-controls="navbar-def"
             onClick={() => setIsOpen(true)}
           >
-            <HiMenu className="h-10 w-10 text-text-dark transition-all hover:text-primary" />
+            <HiMenu className="h-10 w-10 text-foreground transition-all hover:text-primary" />
           </button>
         )}
 
@@ -46,7 +46,7 @@ export default function Navbar() {
           id="navbar-def"
           className={`w-full lg:flex lg:flex-row lg:items-center lg:justify-between ${
             isOpen
-              ? "absolute right-0 top-20 flex w-2/3 flex-col-reverse gap-12 rounded-b-2xl bg-background-light py-6 shadow-2xl"
+              ? "absolute right-0 top-20 flex w-2/3 flex-col-reverse gap-12 rounded-b-2xl bg-background py-6 shadow-2xl"
               : "hidden"
           }`}
         >
@@ -104,7 +104,7 @@ export default function Navbar() {
                   <Link href="/dashboard">
                     <button
                       type="button"
-                      className="rounded-lg bg-primary px-4 py-2 text-text-light transition-colors hover:bg-button-hover-primary
+                      className="rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/80
                   "
                     >
                       Dashboard
@@ -126,7 +126,7 @@ export default function Navbar() {
                   <Link href="/register">
                     <button
                       type="button"
-                      className="rounded-lg bg-primary px-4 py-2 text-text-light transition-colors hover:bg-button-hover-primary
+                      className="rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/80
                   "
                     >
                       Register
