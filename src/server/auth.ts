@@ -22,12 +22,14 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      orgId?: string;
       role: GlobalRole;
       memberRole?: MemberRole;
     } & DefaultSession["user"];
   }
 
   interface User {
+    orgId?: string;
     role: GlobalRole;
     memberRole?: MemberRole;
   }
@@ -36,6 +38,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface DefaultJWT {
     id: string;
+    orgId?: string;
     role: GlobalRole;
     memberRole?: MemberRole;
   }
@@ -47,6 +50,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.orgId = user.orgId;
         token.role = user.role;
         token.memberRole = user.memberRole;
       }
@@ -103,6 +107,7 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           email: user.email,
+          orgId: user.organizationId ?? undefined,
           role: user.globalRole,
           memberRole: user.memberRole ?? undefined,
         };
