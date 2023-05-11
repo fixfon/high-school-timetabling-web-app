@@ -160,14 +160,15 @@ model OrganizationClassHour {
 }
 
 model Organization {
-    id                    String                  @id @default(cuid())
-    name                  String
-    description           String?
-    contact               String?                 @db.Text
-    firstConfiguration    Boolean                 @default(false)
-    createdAt             DateTime                @default(now())
-    updatedAt             DateTime                @updatedAt
-    users                 User[]
+    id                 String   @id @default(cuid())
+    name               String   @unique
+    description        String?
+    contact            String?  @db.Text
+    firstConfiguration Boolean  @default(false)
+    createdAt          DateTime @default(now())
+    updatedAt          DateTime @updatedAt
+
+    User_members          User[]                  @relation("User_organizationMember")
     teachers              Teacher[]
     TeacherWorkPreferance TeacherWorkPreferance[]
     Classroom             Classroom[]
@@ -175,6 +176,9 @@ model Organization {
     OrganizationClassHour OrganizationClassHour?
     TeacherLesson         TeacherLesson[]
     ClassroomLesson       ClassroomLesson[]
+
+    OrganizationManager User   @relation("User_organizationManager", fields: [managerUserId], references: [id])
+    managerUserId       String @unique
 }
 
 model User {
@@ -189,9 +193,12 @@ model User {
     createdAt  DateTime    @default(now())
     updatedAt  DateTime    @updatedAt
 
-    Organization   Organization? @relation(fields: [organizationId], references: [id])
-    organizationId String?
-    Teacher        Teacher?
+    Teacher Teacher?
+
+    OrganizationMember Organization? @relation("User_organizationMember", fields: [organizationId], references: [id])
+    organizationId     String?
+
+    OrganizationManager Organization? @relation("User_organizationManager")
 
     @@index(organizationId)
 }

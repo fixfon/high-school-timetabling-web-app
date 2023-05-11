@@ -37,6 +37,19 @@ export const registerRouter = createTRPCRouter({
         });
       }
 
+      const checkOrganization = await ctx.prisma.organization.findUnique({
+        where: {
+          name: organization,
+        },
+      });
+
+      if (checkOrganization) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Organization with this name already exists",
+        });
+      }
+
       const hashedPassword = await hash(password);
 
       const user = await ctx.prisma.user.create({
@@ -47,10 +60,21 @@ export const registerRouter = createTRPCRouter({
           surname,
           globalRole: "ORGMEMBER",
           memberRole: "MANAGER",
-          Organization: {
-            create: {
-              name: organization,
-              contact: phone,
+        },
+      });
+
+      await ctx.prisma.organization.create({
+        data: {
+          name: organization,
+          contact: phone,
+          User_members: {
+            connect: {
+              id: user.id,
+            },
+          },
+          OrganizationManager: {
+            connect: {
+              id: user.id,
             },
           },
         },
