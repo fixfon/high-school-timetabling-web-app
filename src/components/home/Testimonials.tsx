@@ -7,10 +7,10 @@ export default function Testimonials() {
         <h2 className="pb-4 text-5xl font-extrabold text-secondary">
           A Lot of Happy
         </h2>
-        <h3 className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-2xl text-transparent">
+        <h3 className="inline-block bg-gradient-to-r from-primary via-secondary to-complementary bg-clip-text text-2xl text-transparent">
           Teachers, Students
         </h3>
-        <h3 className="inline-block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-2xl text-transparent">
+        <h3 className="inline-block bg-gradient-to-r from-primary via-secondary to-complementary bg-clip-text text-2xl text-transparent">
           Managers
         </h3>
       </div>

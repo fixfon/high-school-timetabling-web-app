@@ -9,7 +9,7 @@ export default function CTA() {
       </h1>
       <h3 className="mb-10 text-xl font-bold lg:text-2xl">
         Let{" "}
-        <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+        <span className="bg-gradient-to-r from-primary via-secondary to-complementary bg-clip-text text-transparent">
           TimetablePro
         </span>{" "}
         Handle Your Optimization

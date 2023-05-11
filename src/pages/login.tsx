@@ -7,13 +7,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { BiShow, BiHide } from "react-icons/bi";
 import { useCallback, useEffect, useState } from "react";
-import { Inter } from "next/font/google";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Oval } from "react-loader-spinner";
 import FullPageLoader from "~/components/loaders/FullPage";
-
-const inter = Inter({ subsets: ["latin"] });
+import { cn } from "~/utils/cn";
+import { fontSans } from "~/utils/fonts";
 
 const Login: NextPage = (props) => {
   const [error, setError] = useState("");
@@ -77,10 +76,10 @@ const Login: NextPage = (props) => {
       </Head>
       {status === "loading" && <FullPageLoader />}
       <div
-        className={
-          `flex h-screen w-full items-center text-lg text-foreground/70 ` +
-          inter.className
-        }
+        className={cn(
+          "flex h-screen w-full items-center font-sans text-lg text-foreground/70",
+          fontSans.variable
+        )}
       >
         <div className="flex min-h-full w-full flex-col px-4 py-12 lg:w-3/5 lg:px-8">
           <Image

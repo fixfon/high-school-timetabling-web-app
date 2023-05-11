@@ -20,7 +20,7 @@ export default function Hero() {
       <div className="flex flex-col items-center justify-center gap-12 lg:w-1/2">
         <h1 className="px-4 text-center text-5xl font-extrabold lg:px-0">
           Transform the way you schedule high school classes with{" "}
-          <span className="bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-foreground via-primary to-complementary bg-clip-text text-transparent">
             TimetablePro
           </span>
         </h1>

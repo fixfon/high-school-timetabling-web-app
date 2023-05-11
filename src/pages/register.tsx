@@ -14,6 +14,8 @@ import { api } from "~/utils/api";
 import FullPageLoader from "~/components/loaders/FullPage";
 import { Oval } from "react-loader-spinner";
 import type { LoginInput } from "~/schemas/login";
+import { cn } from "~/utils/cn";
+import { fontSans } from "~/utils/fonts";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -89,10 +91,10 @@ const Register: NextPage = (props) => {
       </Head>
       {status === "loading" && <FullPageLoader />}
       <div
-        className={
-          `flex h-full min-h-screen w-full items-center text-lg text-foreground/70 md:h-screen ` +
-          inter.className
-        }
+        className={cn(
+          "flex h-full min-h-screen w-full items-center font-sans text-lg text-foreground/70 md:h-screen",
+          fontSans.variable
+        )}
       >
         <div className="flex min-h-full w-full flex-col px-4 py-12 lg:w-3/5 lg:px-8">
           <Image
@@ -103,9 +105,7 @@ const Register: NextPage = (props) => {
           />
           <div className="my-auto flex h-full flex-col self-center xl:max-w-[80%]">
             <div className="mt-4 pb-4 md:mt-0 md:pb-12">
-              <h1 className="text-5xl font-extrabold text-primary">
-                Register
-              </h1>
+              <h1 className="text-5xl font-extrabold text-primary">Register</h1>
             </div>
             <div className="flex flex-col gap-4 pb-4 md:pb-12">
               <h3 className="text-xl font-medium text-primary">
@@ -131,7 +131,7 @@ const Register: NextPage = (props) => {
                       className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic focus:outline disabled:opacity-60 ${
                         errors.name?.message
                           ? "border-red-500 outline-red-500"
-                          : "border-border outline-background-dark/70"
+                          : "outline-background-dark/70 border-border"
                       }`}
                       type="text"
                       {...register("name")}
@@ -149,7 +149,7 @@ const Register: NextPage = (props) => {
                       className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                         errors.surname?.message
                           ? "border-red-500 outline-red-500"
-                          : "border-border outline-background-dark/70"
+                          : "outline-background-dark/70 border-border"
                       }`}
                       type="text"
                       {...register("surname")}
@@ -169,7 +169,7 @@ const Register: NextPage = (props) => {
                       className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                         errors.email?.message
                           ? "border-red-500 outline-red-500"
-                          : "border-border outline-background-dark/70"
+                          : "outline-background-dark/70 border-border"
                       }`}
                       type="email"
                       {...register("email")}
@@ -216,7 +216,7 @@ const Register: NextPage = (props) => {
                         className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                           errors.password?.message
                             ? "border-red-500 outline-red-500"
-                            : "border-border outline-background-dark/70"
+                            : "outline-background-dark/70 border-border"
                         }`}
                         type={showPassword ? "text" : "password"}
                         {...register("password")}
@@ -247,7 +247,7 @@ const Register: NextPage = (props) => {
                         className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                           errors.confirmPassword?.message
                             ? "border-red-500 outline-red-500"
-                            : "border-border outline-background-dark/70"
+                            : "outline-background-dark/70 border-border"
                         }`}
                         type={showConfirmPassword ? "text" : "password"}
                         {...register("confirmPassword")}
@@ -278,7 +278,7 @@ const Register: NextPage = (props) => {
                     className={`rounded-lg border bg-background px-3 py-0.5 placeholder:select-none placeholder:italic disabled:opacity-60 ${
                       errors.organization?.message
                         ? "border-red-500 outline-red-500"
-                        : "border-border outline-background-dark/70"
+                        : "outline-background-dark/70 border-border"
                     }`}
                     type="text"
                     {...register("organization")}
