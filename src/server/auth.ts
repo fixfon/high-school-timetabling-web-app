@@ -19,25 +19,24 @@ import { verify } from "argon2";
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
 declare module "next-auth" {
-  interface Session extends DefaultSession {
-    user: {
-      id: string;
-      orgId?: string;
-      role: GlobalRole;
-      memberRole?: MemberRole;
-    } & DefaultSession["user"];
-  }
-
   interface User {
+    name: string;
+    surname: string;
+    image?: string;
     orgId?: string;
     role: GlobalRole;
     memberRole?: MemberRole;
+  }
+  interface Session {
+    user: User;
   }
 }
 
 declare module "next-auth/jwt" {
   interface DefaultJWT {
     id: string;
+    surname: string;
+    image?: string;
     orgId?: string;
     role: GlobalRole;
     memberRole?: MemberRole;
@@ -49,7 +48,9 @@ export const authOptions: NextAuthOptions = {
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.email = user.email;
+        token.name = user.name;
+        token.surname = user.surname;
+        token.image = user.image;
         token.orgId = user.orgId;
         token.role = user.role;
         token.memberRole = user.memberRole;
@@ -60,6 +61,12 @@ export const authOptions: NextAuthOptions = {
     session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id;
+        session.user.name = token.name ?? "";
+        session.user.surname = token.surname;
+        session.user.image = token.image;
+        session.user.orgId = token.orgId;
+        session.user.role = token.role;
+        session.user.memberRole = token.memberRole;
       }
 
       return session;
@@ -106,7 +113,9 @@ export const authOptions: NextAuthOptions = {
 
         return {
           id: user.id,
-          email: user.email,
+          name: user.name,
+          surname: user.surname,
+          image: user.image ?? undefined,
           orgId: user.organizationId ?? undefined,
           role: user.globalRole,
           memberRole: user.memberRole ?? undefined,
