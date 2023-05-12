@@ -116,7 +116,28 @@ export default function Sidebar() {
           </div>
         </div>
       ) : (
-        <ul></ul>
+        <div className="flex h-[66%] flex-col items-start justify-center space-y-8 font-medium">
+          <div
+            className={cn(
+              "w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent",
+              router.pathname === "/dashboard" && "bg-accent"
+            )}
+          >
+            <Link className="flex items-center gap-4" href="/dashboard">
+              <PanelTop />
+              <span>Dashboard</span>
+            </Link>
+          </div>
+          <div className="w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent">
+            <Link
+              className="flex items-center gap-4"
+              href="/dashboard/timetables/view"
+            >
+              <CalendarClock />
+              <span>View Timetable</span>
+            </Link>
+          </div>
+        </div>
       )}
       <Separator className="absolute right-0 top-0" orientation="vertical" />
     </nav>
