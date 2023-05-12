@@ -16,8 +16,11 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
+import { useRouter } from "next/router";
+import { cn } from "~/utils/cn";
 
 export default function Sidebar() {
+  const router = useRouter();
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(true);
 
@@ -25,13 +28,23 @@ export default function Sidebar() {
     <nav className="relative h-[calc(100vh-56px)] w-full max-w-[20%]">
       {session?.user.memberRole === "MANAGER" ? (
         <div className="flex h-[66%] flex-col items-start justify-center space-y-8 font-medium">
-          <div className="w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent">
+          <div
+            className={cn(
+              "w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent",
+              router.pathname === "/dashboard" && "bg-accent"
+            )}
+          >
             <Link className="flex items-center gap-4" href="/dashboard">
               <PanelTop />
               <span>Dashboard</span>
             </Link>
           </div>
-          <div className="w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent">
+          <div
+            className={cn(
+              "w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent",
+              router.pathname === "/dashboard/teachers" && "bg-accent"
+            )}
+          >
             <Link
               className="flex items-center gap-4"
               href="/dashboard/teachers"
@@ -40,7 +53,12 @@ export default function Sidebar() {
               <span>Teachers</span>
             </Link>
           </div>
-          <div className="w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent">
+          <div
+            className={cn(
+              "w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent",
+              router.pathname === "/dashboard/classrooms" && "bg-accent"
+            )}
+          >
             <Link
               className="flex items-center gap-4"
               href="/dashboard/classrooms"
@@ -64,13 +82,25 @@ export default function Sidebar() {
             </div>
 
             <CollapsibleContent className="flex flex-col items-center justify-center">
-              <div className="cursor-pointer rounded-lg px-4 py-2 text-base font-normal hover:bg-accent">
+              <div
+                className={cn(
+                  "cursor-pointer rounded-lg px-4 py-2 text-base font-normal hover:bg-accent",
+                  router.pathname === "dashboard/timetables/create" &&
+                    "bg-accent"
+                )}
+              >
                 <Link href={"/dashboard/timetables/create"}>
                   Create Timetable
                 </Link>
               </div>
 
-              <div className="cursor-pointer rounded-lg px-4 py-2 text-base font-normal hover:bg-accent">
+              <div
+                className={cn(
+                  "cursor-pointer rounded-lg px-4 py-2 text-base font-normal hover:bg-accent",
+                  router.pathname === "/dashboard/timetables/view" &&
+                    "bg-accent"
+                )}
+              >
                 <Link href={"/dashboard/timetables/view"}>View Timetables</Link>
               </div>
             </CollapsibleContent>
@@ -78,7 +108,7 @@ export default function Sidebar() {
           <div className="w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent">
             <Link
               className="flex items-center gap-4"
-              href="/dashboard/subjects"
+              href="/dashboard/organization"
             >
               <School />
               <span>Organization</span>

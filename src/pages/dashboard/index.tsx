@@ -6,8 +6,8 @@ const DashboardHome: NextPage = (props) => {
   return (
     <>
       <Head>
-        <title>High School Timetabler</title>
-        <meta name="description" content="High School Timetabler" />
+        <title>Dashboard | TimetablePro</title>
+        <meta name="description" content="TimetablePro Dashboard" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
