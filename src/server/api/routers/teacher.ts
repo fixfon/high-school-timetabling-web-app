@@ -1,57 +1,11 @@
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
-
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-} from "~/server/api/trpc";
-import { ClassLevel, type Teacher } from "@prisma/client";
+import { hash } from "argon2";
 import { TRPCError } from "@trpc/server";
 import teacherSchema from "~/schemas/teacher";
-import { hash } from "argon2";
+import { type Teacher } from "@prisma/client";
 
-export const dashboardRouter = createTRPCRouter({
-  getClassrooms: protectedProcedure.query(({ ctx }) => {
-    // const classrooms = await ctx.prisma.classRoom.findMany({
-    //   where: {
-    //     organizationId: "1",
-    //   },
-    // });
-
-    return {
-      success: true,
-    };
-  }),
-
-  createClassroom: protectedProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        classLevel: z.enum([
-          ClassLevel.L9,
-          ClassLevel.L10,
-          ClassLevel.L11,
-          ClassLevel.L12,
-        ]),
-        organizationId: z.string(),
-      })
-    )
-    .mutation(({ input, ctx }) => {
-      const { name, classLevel, organizationId } = input;
-
-      // await ctx.prisma.classRoom.create({
-      //   data: {
-      //     name,
-      //     classLevel,
-      //     organizationId,
-      //   },
-      // });
-
-      return {
-        success: true,
-      };
-    }),
-
+export const teacherRouter = createTRPCRouter({
   getTeachers: protectedProcedure.query(async ({ ctx }) => {
     const teachers = await ctx.prisma.teacher.findMany({
       where: {
@@ -252,12 +206,4 @@ export const dashboardRouter = createTRPCRouter({
         success: true,
       };
     }),
-
-  // getAll: publicProcedure.query(({ ctx }) => {
-  //   return ctx.prisma.example.findMany();
-  // }),
-
-  // getSecretMessage: protectedProcedure.query(() => {
-  //   return "you can now see this secret message!";
-  // }),
 });
