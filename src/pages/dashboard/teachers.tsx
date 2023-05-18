@@ -45,7 +45,6 @@ import { DataTable } from "~/components/ui/data-table";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -92,7 +91,7 @@ const teacherColumns: ColumnDef<Teacher>[] = [
     header: "",
     cell: ({ row }) => {
       const { mutateAsync, isLoading } =
-        api.dashboard.deleteTeacher.useMutation();
+        api.teacher.deleteTeacher.useMutation();
 
       const handleDelete = async () => {
         await mutateAsync({ teacherId: row.getValue("id") });
@@ -112,7 +111,7 @@ const teacherColumns: ColumnDef<Teacher>[] = [
 ];
 
 const TeacherTableView = () => {
-  const { data: teachers } = api.dashboard.getTeachers.useQuery();
+  const { data: teachers } = api.teacher.getTeachers.useQuery();
 
   return (
     <div className="pt-12">
@@ -211,7 +210,7 @@ const CreateTeacher = () => {
   const createUserAccountChecked = useWatch({ control, name: "createUser" });
 
   const trpcContext = api.useContext();
-  const { mutateAsync, isLoading } = api.dashboard.createTeacher.useMutation({
+  const { mutateAsync, isLoading } = api.teacher.createTeacher.useMutation({
     onSuccess: () => {
       toast({
         title: "Teacher created successfully",
@@ -475,7 +474,7 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
     data: teacher,
     isLoading,
     refetch,
-  } = api.dashboard.getTeacher.useQuery({
+  } = api.teacher.getTeacher.useQuery({
     teacherId,
   });
 
@@ -563,7 +562,7 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
 
   const trpcContext = api.useContext();
   const { mutateAsync, isLoading: isEditing } =
-    api.dashboard.updateTeacher.useMutation({
+    api.teacher.updateTeacher.useMutation({
       onSuccess: () => {
         toast({
           title: "Teacher edited successfully",
