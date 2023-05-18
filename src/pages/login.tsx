@@ -59,8 +59,10 @@ const Login: NextPage = (props) => {
   };
 
   useEffect(() => {
-    if (session) {
+    if (session?.user.role === "ORGMEMBER") {
       router.push("/dashboard");
+    } else if (session?.user.role === "SUPERADMIN") {
+      router.push("/admin");
     }
   }, [session, router]);
 
