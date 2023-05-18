@@ -5,106 +5,25 @@ import {
   publicProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
-import { ClassLevel } from "@prisma/client";
+import { ClassLevel, type Teacher } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
+import teacherSchema from "~/schemas/teacher";
+import { hash } from "argon2";
 
 export const dashboardRouter = createTRPCRouter({
-  getTerms: publicProcedure.query(async ({ ctx }) => {
-    const terms = await ctx.prisma.teacher.findMany({
-      where: {
-        Class: {
-          some: {
-            Lesson: {
-              name: "Math",
-            },
-          },
-        },
-      },
-    });
+  getClassrooms: protectedProcedure.query(({ ctx }) => {
+    // const classrooms = await ctx.prisma.classRoom.findMany({
+    //   where: {
+    //     organizationId: "1",
+    //   },
+    // });
 
     return {
-      terms,
-    };
-  }),
-  createTerm: publicProcedure
-    .input(
-      z.object({
-        termName: z.string(),
-        termDescription: z.string(),
-        startDate: z.string(),
-        endDate: z.string(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { termName, termDescription, startDate, endDate } = input;
-
-      await ctx.prisma.term.create({
-        data: {
-          organizationId: "1",
-          name: termName,
-          description: termDescription,
-          start: new Date(startDate),
-          end: new Date(endDate),
-        },
-      });
-
-      return {
-        success: true,
-      };
-    }),
-
-  getSubjects: publicProcedure.query(async ({ ctx }) => {
-    const subjects = await ctx.prisma.subject.findMany({
-      where: {
-        organizationId: "1",
-      },
-    });
-
-    return {
-      subjects,
+      success: true,
     };
   }),
 
-  createSubject: publicProcedure
-    .input(
-      z.object({
-        code: z.string(),
-        name: z.string(),
-        description: z.string(),
-        termId: z.string(),
-        organizationId: z.string(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { code, name, description, termId, organizationId } = input;
-
-      await ctx.prisma.subject.create({
-        data: {
-          code,
-          name,
-          description,
-          termId,
-          organizationId,
-        },
-      });
-
-      return {
-        success: true,
-      };
-    }),
-
-  getClassrooms: publicProcedure.query(async ({ ctx }) => {
-    const classrooms = await ctx.prisma.classRoom.findMany({
-      where: {
-        organizationId: "1",
-      },
-    });
-
-    return {
-      classrooms,
-    };
-  }),
-
-  createClassroom: publicProcedure
+  createClassroom: protectedProcedure
     .input(
       z.object({
         name: z.string(),
@@ -117,26 +36,29 @@ export const dashboardRouter = createTRPCRouter({
         organizationId: z.string(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(({ input, ctx }) => {
       const { name, classLevel, organizationId } = input;
 
-      await ctx.prisma.classRoom.create({
-        data: {
-          name,
-          classLevel,
-          organizationId,
-        },
-      });
+      // await ctx.prisma.classRoom.create({
+      //   data: {
+      //     name,
+      //     classLevel,
+      //     organizationId,
+      //   },
+      // });
 
       return {
         success: true,
       };
     }),
 
-  getTeachers: publicProcedure.query(async ({ ctx }) => {
+  getTeachers: protectedProcedure.query(async ({ ctx }) => {
     const teachers = await ctx.prisma.teacher.findMany({
       where: {
-        organizationId: "1",
+        organizationId: ctx.session.user.orgId,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
@@ -145,26 +67,186 @@ export const dashboardRouter = createTRPCRouter({
     };
   }),
 
-  createTeacher: publicProcedure
+  getTeacher: protectedProcedure
     .input(
       z.object({
-        fullName: z.string(),
-        description: z.string(),
-        department: z.string(),
-        organizationId: z.string(),
+        teacherId: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { teacherId } = input;
+
+      const foundTeacher = await ctx.prisma.teacher.findFirst({
+        where: {
+          id: teacherId,
+        },
+        include: {
+          TeacherWorkPreferance: true,
+          User: true,
+        },
+      });
+
+      return {
+        foundTeacher,
+      };
+    }),
+
+  createTeacher: protectedProcedure
+    .input(teacherSchema)
+    .mutation(async ({ input, ctx }) => {
+      const {
+        name,
+        surname,
+        department,
+        description,
+        createUser,
+        email,
+        password,
+        timePreferences,
+      } = input;
+
+      const { orgId } = ctx.session.user;
+      if (!orgId) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Organization not found",
+        });
+      }
+
+      let teacher: Teacher;
+
+      // check existing user logic
+      if (createUser && email && password) {
+        const foundUser = await ctx.prisma.user.findUnique({
+          where: {
+            email,
+          },
+        });
+
+        if (foundUser) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "User with this email already exists",
+          });
+        }
+
+        const hashedPassword = await hash(password);
+
+        teacher = await ctx.prisma.teacher.create({
+          data: {
+            organizationId: orgId,
+            name,
+            surname,
+            department,
+            description,
+          },
+        });
+
+        await ctx.prisma.user.create({
+          data: {
+            email,
+            password: hashedPassword,
+            name,
+            surname,
+            memberRole: "TEACHER",
+            organizationId: orgId,
+            Teacher: {
+              connect: {
+                id: teacher.id,
+              },
+            },
+          },
+        });
+      } else {
+        teacher = await ctx.prisma.teacher.create({
+          data: {
+            organizationId: orgId,
+            name,
+            surname,
+            department,
+            description,
+          },
+        });
+      }
+
+      if (timePreferences) {
+        for (const days of timePreferences) {
+          await ctx.prisma.teacherWorkPreferance.create({
+            data: {
+              organizationId: orgId,
+              teacherId: teacher.id,
+              workingDay: days.day,
+              workingHour: [...days.classHour],
+            },
+          });
+        }
+      }
+
+      // put lesson logic here
+
+      return {
+        success: true,
+      };
+    }),
+
+  updateTeacher: protectedProcedure
+    .input(teacherSchema)
+    .mutation(({ input, ctx }) => {
+      const {
+        name,
+        surname,
+        department,
+        description,
+        createUser,
+        email,
+        password,
+        timePreferences,
+      } = input;
+
+      const { orgId } = ctx.session.user;
+      if (!orgId) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Organization not found",
+        });
+      }
+
+      // put lesson logic here
+
+      return {
+        success: true,
+      };
+    }),
+
+  deleteTeacher: protectedProcedure
+    .input(
+      z.object({
+        teacherId: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { fullName, description, department, organizationId } = input;
+      const { teacherId } = input;
 
-      await ctx.prisma.teacher.create({
-        data: {
-          fullName,
-          description,
-          department,
-          organizationId,
+      const foundTeacher = await ctx.prisma.teacher.findUnique({
+        where: {
+          id: teacherId,
         },
       });
+
+      if (!foundTeacher) {
+        return new TRPCError({
+          code: "NOT_FOUND",
+          message: "Teacher not found",
+        });
+      }
+
+      if (foundTeacher.userId) {
+        await ctx.prisma.user.delete({
+          where: {
+            id: foundTeacher.userId,
+          },
+        });
+      }
 
       return {
         success: true,

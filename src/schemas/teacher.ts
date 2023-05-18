@@ -12,8 +12,9 @@ const teacherSchema = z.object({
   description: z.string().max(240).optional(),
   department: z.string().max(40).optional(),
   createUser: z.boolean().optional().default(false),
-  email: z.string().email().optional(),
-  password: z.string().min(6).max(20).optional(),
+  email: z.string().email().optional().or(z.literal("")),
+  password: z.string().min(6).max(20).optional().or(z.literal("")),
+  lessonIds: z.array(z.number()).optional(),
   timePreferences: z.array(teacherTimePreferencesSchema).optional(),
 });
 
