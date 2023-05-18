@@ -249,7 +249,7 @@ const CreateTeacher = () => {
   }, [isSubmitSuccessful, reset]);
 
   return (
-    <div className="flex w-full lg:min-w-[50%] flex-col items-center justify-start pt-12">
+    <div className="flex w-full flex-col items-center justify-start pt-12 lg:min-w-[50%]">
       <h1 className="text-2xl font-bold">Create Teacher</h1>
       <form
         className="mt-8 flex w-full flex-col space-y-3 px-8"
@@ -469,6 +469,7 @@ type EditTeacherProps = {
   teacherId: string;
 };
 const EditTeacher = ({ teacherId }: EditTeacherProps) => {
+  const [windowSize, setWindowSize] = useState([1440, 1070]);
   const [openSheet, setOpenSheet] = useState(false);
   const {
     data: teacher,
@@ -618,12 +619,29 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
     }
   }, [isLoading, teacher, setValue]);
 
+  useEffect(() => {
+    const handleWindowResize = () => {
+      setWindowSize([window.innerWidth, window.innerHeight]);
+    };
+
+    window.addEventListener("resize", handleWindowResize);
+
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    setWindowSize([window.innerWidth, window.innerHeight]);
+  }, []);
+
   return (
     <Sheet open={openSheet} onOpenChange={setOpenSheet}>
-      <SheetTrigger>
+      <SheetTrigger asChild>
         <Button variant="default">Edit</Button>
       </SheetTrigger>
-      <SheetContent>
+
+      <SheetContent size={windowSize.at(0)! <= 1024 ? "full" : "default"}>
         {isLoading ? (
           <SheetHeader className="items-center justify-center">
             <Oval
@@ -635,232 +653,230 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
             />
           </SheetHeader>
         ) : (
-          <SheetHeader>
-            <SheetTitle>Edit Teacher {teacher?.foundTeacher?.name}</SheetTitle>
-            <SheetDescription>
-              <div className="flex flex-col items-center justify-start pt-6">
-                <form
-                  className="mt-8 flex w-full flex-col space-y-3 px-8"
-                  noValidate
-                  onSubmit={handleSubmit(onSubmit)}
-                >
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      defaultValue={teacher?.foundTeacher?.name}
-                      disabled={isLoading || isSubmitting || isEditing}
-                      type="text"
-                      id="name"
-                      {...register("name")}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="surname">Surname</Label>
-                    <Input
-                      defaultValue={teacher?.foundTeacher?.surname}
-                      disabled={isLoading || isSubmitting || isEditing}
-                      type="text"
-                      id="surname"
-                      {...register("surname")}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="department">Department</Label>
-                    <Input
-                      defaultValue={teacher?.foundTeacher?.department ?? ""}
-                      disabled={isLoading || isSubmitting || isEditing}
-                      type="text"
-                      id="department"
-                      {...register("department")}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      defaultValue={teacher?.foundTeacher?.description ?? ""}
-                      disabled={isLoading || isSubmitting || isEditing}
-                      id="description"
-                      {...register("description")}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      defaultValue={teacher?.foundTeacher?.User?.email ?? ""}
-                      disabled={isLoading || isSubmitting || isEditing}
-                      type="email"
-                      id="email"
-                      {...register("email", { required: false })}
-                    />
-                  </div>
-                  <div className="pb-8">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      disabled={isLoading || isSubmitting || isEditing}
-                      type="password"
-                      id="password"
-                      {...register("password", { required: false })}
-                    />
-                  </div>
+          <>
+            <SheetHeader>
+              <SheetTitle>
+                Edit Teacher {teacher?.foundTeacher?.name}
+              </SheetTitle>
+            </SheetHeader>
+            <div className="flex flex-col items-center justify-start pt-6">
+              <form
+                className="mt-8 flex w-full flex-col space-y-3 px-8"
+                noValidate
+                onSubmit={handleSubmit(onSubmit)}
+              >
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    defaultValue={teacher?.foundTeacher?.name}
+                    disabled={isLoading || isSubmitting || isEditing}
+                    type="text"
+                    id="name"
+                    {...register("name")}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="surname">Surname</Label>
+                  <Input
+                    defaultValue={teacher?.foundTeacher?.surname}
+                    disabled={isLoading || isSubmitting || isEditing}
+                    type="text"
+                    id="surname"
+                    {...register("surname")}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="department">Department</Label>
+                  <Input
+                    defaultValue={teacher?.foundTeacher?.department ?? ""}
+                    disabled={isLoading || isSubmitting || isEditing}
+                    type="text"
+                    id="department"
+                    {...register("department")}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    defaultValue={teacher?.foundTeacher?.description ?? ""}
+                    disabled={isLoading || isSubmitting || isEditing}
+                    id="description"
+                    {...register("description")}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    defaultValue={teacher?.foundTeacher?.User?.email ?? ""}
+                    disabled={isLoading || isSubmitting || isEditing}
+                    type="email"
+                    id="email"
+                    {...register("email", { required: false })}
+                  />
+                </div>
+                <div className="pb-8">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    disabled={isLoading || isSubmitting || isEditing}
+                    type="password"
+                    id="password"
+                    {...register("password", { required: false })}
+                  />
+                </div>
 
-                  <Dialog
-                    open={isPrefDialogOpen}
-                    onOpenChange={setIsPrefDialogOpen}
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        disabled={isLoading || isSubmitting || isEditing}
-                        variant="outline"
-                        className="flex items-center justify-center gap-2"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Time Preferences
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[680px]">
-                      <DialogHeader>
-                        <DialogTitle>Edit Time Preferences</DialogTitle>
-                        <DialogDescription>
-                          Set the days and class hours the teacher is available.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Hour / Day</TableHead>
-                              <TableHead>Hour 1</TableHead>
-                              <TableHead>Hour 2</TableHead>
-                              <TableHead>Hour 3</TableHead>
-                              <TableHead>Hour 4</TableHead>
-                              <TableHead>Hour 5</TableHead>
-                              <TableHead>Hour 6</TableHead>
-                              <TableHead>Hour 7</TableHead>
-                              <TableHead>Hour 8</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {[
-                              "Monday",
-                              "Tuesday",
-                              "Wednesday",
-                              "Thursday",
-                              "Friday",
-                            ].map((day, dayIndex) => (
-                              <TableRow key={dayIndex}>
-                                <TableCell>{day}</TableCell>
-                                {Array.from(
-                                  [
-                                    ClassHour.C1,
-                                    ClassHour.C2,
-                                    ClassHour.C3,
-                                    ClassHour.C4,
-                                    ClassHour.C5,
-                                    ClassHour.C6,
-                                    ClassHour.C7,
-                                    ClassHour.C8,
-                                  ],
-                                  (elem, i) => (
-                                    <TableCell key={i}>
-                                      <Input
-                                        disabled={
-                                          isLoading || isSubmitting || isEditing
-                                        }
-                                        type="checkbox"
-                                        checked={timePreferences[
-                                          dayIndex
-                                        ]?.classHour.includes(elem)}
-                                        value={elem}
-                                        className="h-4 w-4 ring-offset-background checked:accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        id={`${dayIndex}-${elem}`}
-                                        onChange={(e) => {
-                                          const prev = getValues(
-                                            `timePreferences.${dayIndex}.classHour`
+                <Dialog
+                  open={isPrefDialogOpen}
+                  onOpenChange={setIsPrefDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      disabled={isLoading || isSubmitting || isEditing}
+                      variant="outline"
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Time Preferences
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[680px]">
+                    <DialogHeader>
+                      <DialogTitle>Edit Time Preferences</DialogTitle>
+                      <DialogDescription>
+                        Set the days and class hours the teacher is available.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Hour / Day</TableHead>
+                            <TableHead>Hour 1</TableHead>
+                            <TableHead>Hour 2</TableHead>
+                            <TableHead>Hour 3</TableHead>
+                            <TableHead>Hour 4</TableHead>
+                            <TableHead>Hour 5</TableHead>
+                            <TableHead>Hour 6</TableHead>
+                            <TableHead>Hour 7</TableHead>
+                            <TableHead>Hour 8</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {[
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                          ].map((day, dayIndex) => (
+                            <TableRow key={dayIndex}>
+                              <TableCell>{day}</TableCell>
+                              {Array.from(
+                                [
+                                  ClassHour.C1,
+                                  ClassHour.C2,
+                                  ClassHour.C3,
+                                  ClassHour.C4,
+                                  ClassHour.C5,
+                                  ClassHour.C6,
+                                  ClassHour.C7,
+                                  ClassHour.C8,
+                                ],
+                                (elem, i) => (
+                                  <TableCell key={i}>
+                                    <Input
+                                      disabled={
+                                        isLoading || isSubmitting || isEditing
+                                      }
+                                      type="checkbox"
+                                      checked={timePreferences[
+                                        dayIndex
+                                      ]?.classHour.includes(elem)}
+                                      value={elem}
+                                      className="h-4 w-4 ring-offset-background checked:accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                      id={`${dayIndex}-${elem}`}
+                                      onChange={(e) => {
+                                        const prev = getValues(
+                                          `timePreferences.${dayIndex}.classHour`
+                                        );
+
+                                        if (e.target.checked) {
+                                          setValue(
+                                            `timePreferences.${dayIndex}.classHour`,
+                                            [...prev, elem]
                                           );
 
-                                          if (e.target.checked) {
-                                            setValue(
-                                              `timePreferences.${dayIndex}.classHour`,
-                                              [...prev, elem]
-                                            );
+                                          const latest =
+                                            getValues(`timePreferences`);
 
-                                            const latest =
-                                              getValues(`timePreferences`);
+                                          if (latest)
+                                            setTimePreferences(() => {
+                                              return {
+                                                ...latest,
+                                              };
+                                            });
+                                        } else {
+                                          setValue(
+                                            `timePreferences.${dayIndex}.classHour`,
+                                            [...prev.filter((p) => p !== elem)]
+                                          );
 
-                                            if (latest)
-                                              setTimePreferences(() => {
-                                                return {
-                                                  ...latest,
-                                                };
-                                              });
-                                          } else {
-                                            setValue(
-                                              `timePreferences.${dayIndex}.classHour`,
-                                              [
-                                                ...prev.filter(
-                                                  (p) => p !== elem
-                                                ),
-                                              ]
-                                            );
+                                          const latest =
+                                            getValues(`timePreferences`);
 
-                                            const latest =
-                                              getValues(`timePreferences`);
+                                          if (latest)
+                                            setTimePreferences(() => {
+                                              return {
+                                                ...latest,
+                                              };
+                                            });
+                                        }
 
-                                            if (latest)
-                                              setTimePreferences(() => {
-                                                return {
-                                                  ...latest,
-                                                };
-                                              });
-                                          }
+                                        return;
+                                      }}
+                                    />
+                                  </TableCell>
+                                )
+                              )}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="default"
+                        type="submit"
+                        onClick={() => setIsPrefDialogOpen(false)}
+                      >
+                        Save
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
-                                          return;
-                                        }}
-                                      />
-                                    </TableCell>
-                                  )
-                                )}
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          variant="default"
-                          type="submit"
-                          onClick={() => setIsPrefDialogOpen(false)}
-                        >
-                          Save
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-
-                  <Button
-                    disabled={isLoading || isSubmitting || isEditing}
-                    type="submit"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Oval
-                          height={20}
-                          width={20}
-                          strokeWidth={4}
-                          strokeWidthSecondary={3}
-                          color="#5090FF"
-                          secondaryColor="#FFFFFF"
-                        />
-                        <span>Edit Teacher</span>
-                      </>
-                    ) : (
-                      "Edit Teacher"
-                    )}
-                  </Button>
-                </form>
-              </div>
-            </SheetDescription>
-          </SheetHeader>
+                <Button
+                  disabled={isLoading || isSubmitting || isEditing}
+                  type="submit"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Oval
+                        height={20}
+                        width={20}
+                        strokeWidth={4}
+                        strokeWidthSecondary={3}
+                        color="#5090FF"
+                        secondaryColor="#FFFFFF"
+                      />
+                      <span>Edit Teacher</span>
+                    </>
+                  ) : (
+                    "Edit Teacher"
+                  )}
+                </Button>
+              </form>
+            </div>
+          </>
         )}
       </SheetContent>
     </Sheet>
