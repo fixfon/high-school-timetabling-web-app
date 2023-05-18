@@ -217,7 +217,7 @@ const CreateTeacher = () => {
       });
 
       // invalidate teacher table
-      void trpcContext.dashboard.getTeachers.invalidate();
+      void trpcContext.teacher.getTeachers.invalidate();
     },
     onError: (err) => {
       toast({
@@ -443,7 +443,7 @@ const CreateTeacher = () => {
         </Dialog>
 
         <Button disabled={isLoading || isSubmitting} type="submit">
-          {isSubmitting ? (
+          {isSubmitting || isLoading ? (
             <>
               <Oval
                 height={20}
@@ -569,7 +569,7 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
         });
 
         // invalidate teacher table
-        void trpcContext.dashboard.getTeachers.invalidate();
+        void trpcContext.teacher.getTeachers.invalidate();
         void refetch();
 
         // close the sheet
@@ -857,7 +857,7 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
                   disabled={isLoading || isSubmitting || isEditing}
                   type="submit"
                 >
-                  {isSubmitting ? (
+                  {isSubmitting || isLoading || isEditing ? (
                     <>
                       <Oval
                         height={20}
