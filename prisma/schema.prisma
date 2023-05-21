@@ -145,7 +145,7 @@ model Teacher {
     Organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
     organizationId String
 
-    User   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    User   User?   @relation(fields: [userId], references: [id])
     userId String? @unique // * This is nullable because a teacher can be added by admin without a user account
 
     @@unique([userId, organizationId])
