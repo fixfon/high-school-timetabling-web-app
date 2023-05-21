@@ -1,3 +1,7 @@
+// TODO: Add pagination
+// TODO: Add search
+// TODO: Add loading
+
 import {
   type ColumnDef,
   flexRender,
@@ -33,7 +37,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="rounded-md border max-w-sm md:max-w-full">
+    <div className="max-w-sm rounded-md border md:max-w-full">
       <Table className="overflow-auto">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

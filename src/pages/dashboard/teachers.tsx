@@ -1,6 +1,4 @@
-// TODO : Add lesson select to teacher creation form
-// TODO : Add select option to existing departments from department table
-// TODO : Handle responsiveness (sheet component also)
+// TODO : Add required errors to fields
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { NextPage } from "next";
@@ -665,7 +663,7 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
     setValue,
     reset,
     control,
-    formState: { isSubmitting, isSubmitSuccessful },
+    formState: { isSubmitting },
   } = useForm<TeacherInput>({
     resolver: zodResolver(teacherSchema),
   });
@@ -703,12 +701,6 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
       await mutateAsync(data);
     } catch (err) {}
   };
-
-  useEffect(() => {
-    if (isSubmitSuccessful) {
-      reset();
-    }
-  }, [isSubmitSuccessful, reset]);
 
   useEffect(() => {
     // for popover component
