@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import Layout from "~/components/dashboard/Layout";
 import { api } from "~/utils/api";
 import teacherSchema, { type TeacherInput } from "~/schemas/teacher";
@@ -15,6 +15,10 @@ import {
   type Teacher,
   type Day,
   type TeacherWorkPreferance,
+  type Lesson,
+  type Department,
+  type User,
+  type TeacherLesson,
 } from "@prisma/client";
 import { Button } from "~/components/ui/button";
 import {
@@ -30,7 +34,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/components/ui/use-toast";
-import { ExternalLink, Trash2 } from "lucide-react";
+import { ChevronsUpDown, ExternalLink, Trash2, X } from "lucide-react";
 import { Oval } from "react-loader-spinner";
 import {
   Table,
@@ -40,7 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { type ColumnDef } from "@tanstack/react-table";
+import { type Row, type ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "~/components/ui/data-table";
 import {
   Sheet,
@@ -49,6 +53,27 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "~/components/ui/sheet";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "~/components/ui/command";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 interface TimePreference {
   day: Day;
@@ -57,7 +82,14 @@ interface TimePreference {
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const teacherColumns: ColumnDef<Teacher>[] = [
+const teacherColumns: ColumnDef<
+  Teacher & {
+    Department: Department;
+    User: User | null;
+    TeacherLesson: TeacherLesson[];
+    TeacherWorkPreferance: TeacherWorkPreferance[];
+  }
+>[] = [
   {
     accessorKey: "id",
     header: "ID",
@@ -73,6 +105,10 @@ const teacherColumns: ColumnDef<Teacher>[] = [
   {
     accessorKey: "department",
     header: "Department",
+    cell: ({ row }) => {
+      const { Department } = row.original;
+      return <span>{Department.name}</span>;
+    },
   },
   {
     accessorKey: "description",
@@ -82,19 +118,28 @@ const teacherColumns: ColumnDef<Teacher>[] = [
     accessorKey: "edit",
     header: "",
     cell: ({ row }) => {
-      const teacherId = row.getValue("id");
-      return <EditTeacher teacherId={(teacherId as string) ?? ""} />;
+      const { id } = row.original;
+      console.log("teacherId on row", id);
+      console.log("row", row);
+      return <EditTeacher teacherId={id} row={row} />;
     },
   },
   {
     accessorKey: "delete",
     header: "",
     cell: ({ row }) => {
-      const { mutateAsync, isLoading } =
-        api.teacher.deleteTeacher.useMutation();
+      const { id } = row.original;
+      const trpcContext = api.useContext();
+
+      const { mutateAsync, isLoading } = api.teacher.deleteTeacher.useMutation({
+        onSuccess: async () => {
+          // validate data
+          await trpcContext.teacher.getTeachers.invalidate();
+        },
+      });
 
       const handleDelete = async () => {
-        await mutateAsync({ teacherId: row.getValue("id") });
+        await mutateAsync({ teacherId: id });
       };
 
       return (
@@ -112,85 +157,92 @@ const teacherColumns: ColumnDef<Teacher>[] = [
 
 const TeacherTableView = () => {
   const { data: teachers } = api.teacher.getTeachers.useQuery();
-
   return (
-    <div className="pt-12">
+    <div className="w-full pt-12 lg:w-3/5">
       <DataTable columns={teacherColumns} data={teachers?.teachers ?? []} />
     </div>
   );
 };
 
+const baseTimePref: TimePreference[] = [
+  {
+    day: "Monday",
+    classHour: [
+      ClassHour.C1,
+      ClassHour.C2,
+      ClassHour.C3,
+      ClassHour.C4,
+      ClassHour.C5,
+      ClassHour.C6,
+      ClassHour.C7,
+      ClassHour.C8,
+    ],
+  },
+  {
+    day: "Tuesday",
+    classHour: [
+      ClassHour.C1,
+      ClassHour.C2,
+      ClassHour.C3,
+      ClassHour.C4,
+      ClassHour.C5,
+      ClassHour.C6,
+      ClassHour.C7,
+      ClassHour.C8,
+    ],
+  },
+  {
+    day: "Wednesday",
+    classHour: [
+      ClassHour.C1,
+      ClassHour.C2,
+      ClassHour.C3,
+      ClassHour.C4,
+      ClassHour.C5,
+      ClassHour.C6,
+      ClassHour.C7,
+      ClassHour.C8,
+    ],
+  },
+  {
+    day: "Thursday",
+    classHour: [
+      ClassHour.C1,
+      ClassHour.C2,
+      ClassHour.C3,
+      ClassHour.C4,
+      ClassHour.C5,
+      ClassHour.C6,
+      ClassHour.C7,
+      ClassHour.C8,
+    ],
+  },
+  {
+    day: "Friday",
+    classHour: [
+      ClassHour.C1,
+      ClassHour.C2,
+      ClassHour.C3,
+      ClassHour.C4,
+      ClassHour.C5,
+      ClassHour.C6,
+      ClassHour.C7,
+      ClassHour.C8,
+    ],
+  },
+];
+
 const CreateTeacher = () => {
   const { toast } = useToast();
   const [isPrefDialogOpen, setIsPrefDialogOpen] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isLessonListSet, setIsLessonListSet] = useState(false);
   // timePref state
   const [timePreferences, setTimePreferences] = useState<TimePreference[]>([
-    {
-      day: "Monday",
-      classHour: [
-        ClassHour.C1,
-        ClassHour.C2,
-        ClassHour.C3,
-        ClassHour.C4,
-        ClassHour.C5,
-        ClassHour.C6,
-        ClassHour.C7,
-        ClassHour.C8,
-      ],
-    },
-    {
-      day: "Tuesday",
-      classHour: [
-        ClassHour.C1,
-        ClassHour.C2,
-        ClassHour.C3,
-        ClassHour.C4,
-        ClassHour.C5,
-        ClassHour.C6,
-        ClassHour.C7,
-        ClassHour.C8,
-      ],
-    },
-    {
-      day: "Wednesday",
-      classHour: [
-        ClassHour.C1,
-        ClassHour.C2,
-        ClassHour.C3,
-        ClassHour.C4,
-        ClassHour.C5,
-        ClassHour.C6,
-        ClassHour.C7,
-        ClassHour.C8,
-      ],
-    },
-    {
-      day: "Thursday",
-      classHour: [
-        ClassHour.C1,
-        ClassHour.C2,
-        ClassHour.C3,
-        ClassHour.C4,
-        ClassHour.C5,
-        ClassHour.C6,
-        ClassHour.C7,
-        ClassHour.C8,
-      ],
-    },
-    {
-      day: "Friday",
-      classHour: [
-        ClassHour.C1,
-        ClassHour.C2,
-        ClassHour.C3,
-        ClassHour.C4,
-        ClassHour.C5,
-        ClassHour.C6,
-        ClassHour.C7,
-        ClassHour.C8,
-      ],
-    },
+    ...baseTimePref,
   ]);
+  const [selectedLessons, setSelectedLessons] = useState<Lesson[]>([]);
+  const [lessonList, setLessonList] = useState<Lesson[]>([]);
 
   const {
     register,
@@ -200,22 +252,30 @@ const CreateTeacher = () => {
     setValue,
     control,
     reset,
-    formState: { isSubmitting, isSubmitSuccessful },
+    formState: { isSubmitting },
   } = useForm<TeacherInput>({
     resolver: zodResolver(teacherSchema),
     defaultValues: {
-      timePreferences: timePreferences,
+      departmentId: undefined,
+      timePreferences: baseTimePref,
+      lessonIds: selectedLessons.map((lesson) => lesson.id),
+      createUser: false,
     },
   });
   const createUserAccountChecked = useWatch({ control, name: "createUser" });
 
   const trpcContext = api.useContext();
   const { mutateAsync, isLoading } = api.teacher.createTeacher.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Teacher created successfully",
       });
-
+      // reset form
+      setTimePreferences([...baseTimePref]);
+      setSelectedLessons([]);
+      setIsLessonListSet(false);
+      await refetchLesson();
+      reset();
       // invalidate teacher table
       void trpcContext.teacher.getTeachers.invalidate();
     },
@@ -227,6 +287,13 @@ const CreateTeacher = () => {
       });
     },
   });
+  const {
+    data: lessonData,
+    isFetched: isLessonFetched,
+    refetch: refetchLesson,
+  } = api.lesson.getLessons.useQuery();
+  const { data: department, isFetched: isDepartmentFetched } =
+    api.department.getDepartments.useQuery();
 
   const onSubmit = async (data: TeacherInput) => {
     try {
@@ -242,13 +309,14 @@ const CreateTeacher = () => {
   }, [unregister, createUserAccountChecked]);
 
   useEffect(() => {
-    if (isSubmitSuccessful) {
-      reset();
+    if (isLessonFetched && lessonData?.lessons && !isLessonListSet) {
+      setLessonList(lessonData.lessons);
+      setIsLessonListSet(true);
     }
-  }, [isSubmitSuccessful, reset]);
+  }, [isLessonFetched, lessonData, isLessonListSet]);
 
   return (
-    <div className="flex w-full flex-col items-center justify-start pt-12 lg:min-w-[50%]">
+    <div className="flex w-3/4 flex-col items-center justify-start pt-12 lg:w-2/5">
       <h1 className="text-2xl font-bold">Create Teacher</h1>
       <form
         className="mt-8 flex w-full flex-col space-y-3 px-8"
@@ -274,13 +342,40 @@ const CreateTeacher = () => {
           />
         </div>
         <div>
-          <Label htmlFor="department">Department</Label>
-          <Input
-            disabled={isLoading || isSubmitting}
-            type="text"
-            id="department"
-            {...register("department")}
-          />
+          <Label>Department</Label>
+          <Controller
+            name="departmentId"
+            control={control}
+            render={({ field: { onChange, value } }) => {
+              return (
+                <Select onValueChange={onChange} value={value}>
+                  <SelectTrigger
+                    disabled={isSubmitting || isLoading}
+                    className="w-full"
+                  >
+                    <SelectValue placeholder="Select a department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Departments</SelectLabel>
+                      {isDepartmentFetched &&
+                        department?.departments.map((department) => (
+                          <SelectItem
+                            key={department.id}
+                            value={department.id}
+                            onSelect={() => {
+                              setValue("departmentId", department.id);
+                            }}
+                          >
+                            {department.name}
+                          </SelectItem>
+                        ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              );
+            }}
+          ></Controller>
         </div>
         <div>
           <Label htmlFor="description">Description</Label>
@@ -324,7 +419,7 @@ const CreateTeacher = () => {
         )}
 
         <Dialog open={isPrefDialogOpen} onOpenChange={setIsPrefDialogOpen}>
-          <DialogTrigger asChild>
+          <DialogTrigger disabled={isSubmitting || isLoading} asChild>
             <Button
               disabled={isLoading || isSubmitting}
               variant="outline"
@@ -441,6 +536,79 @@ const CreateTeacher = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        {selectedLessons.length > 0 && (
+          <div className="flex max-w-full flex-row flex-wrap rounded-md border px-2 py-2">
+            {selectedLessons.map((lesson) => (
+              <div
+                key={lesson.id}
+                className=" mr-2 flex h-min max-w-[120px] items-center justify-center rounded-md border px-2 py-1 transition-colors hover:cursor-pointer hover:bg-accent"
+                onClick={() => {
+                  setSelectedLessons(() =>
+                    selectedLessons.filter((l) => l !== lesson)
+                  );
+                  setLessonList((prev) => [...prev, lesson]);
+
+                  const prevLessonIds = getValues("lessonIds");
+                  if (prevLessonIds) {
+                    setValue(
+                      "lessonIds",
+                      prevLessonIds.filter((l) => l !== lesson.id)
+                    );
+                  }
+                }}
+              >
+                <span className="shrink-[2] pr-2 text-xs">{lesson.name}</span>
+                <Button size="sm" variant="destructive" className="h-5 w-5 p-0">
+                  <X size={18} className="h-full w-full" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+          <PopoverTrigger disabled={isSubmitting || isLoading} asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={isPopoverOpen}
+              className="w-full justify-between"
+            >
+              Select lessons
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-full p-0" align="start">
+            <Command className="w-80">
+              <CommandInput placeholder="Search lesson..." />
+              <CommandEmpty>No lesson found.</CommandEmpty>
+              <CommandGroup>
+                {lessonList.map((lesson) => (
+                  <CommandItem
+                    key={lesson.id}
+                    onSelect={() => {
+                      setSelectedLessons((prev) => [lesson, ...prev]);
+                      setLessonList(() =>
+                        lessonList.filter((l) => l !== lesson)
+                      );
+
+                      const prevLessonIds = getValues("lessonIds");
+
+                      setValue(
+                        "lessonIds",
+                        prevLessonIds
+                          ? [...prevLessonIds, lesson.id]
+                          : [lesson.id]
+                      );
+                    }}
+                  >
+                    {lesson.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </Command>
+          </PopoverContent>
+        </Popover>
 
         <Button disabled={isLoading || isSubmitting} type="submit">
           {isSubmitting || isLoading ? (
@@ -466,10 +634,44 @@ const CreateTeacher = () => {
 
 type EditTeacherProps = {
   teacherId: string;
+  row: Row<
+    Teacher & {
+      Department: Department;
+      User: User | null;
+      TeacherLesson: TeacherLesson[];
+      TeacherWorkPreferance: TeacherWorkPreferance[];
+    }
+  >;
 };
-const EditTeacher = ({ teacherId }: EditTeacherProps) => {
+const EditTeacher = ({ teacherId, row }: EditTeacherProps) => {
   const [windowSize, setWindowSize] = useState([1440, 1070]);
   const [openSheet, setOpenSheet] = useState(false);
+
+  const { toast } = useToast();
+  const [isPrefDialogOpen, setIsPrefDialogOpen] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  // const [isLessonListSet, setIsLessonListSet] = useState(false);
+  // const [isTeacherSet, setIsTeacherSet] = useState(false);
+  // timePref state
+  const [timePreferences, setTimePreferences] = useState<TimePreference[]>([
+    ...baseTimePref,
+  ]);
+  const [selectedLessons, setSelectedLessons] = useState<Lesson[]>([]);
+  const [lessonList, setLessonList] = useState<Lesson[]>([]);
+
+  // add teacherSchema to teacher id
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    setValue,
+    reset,
+    control,
+    formState: { isSubmitting, isSubmitSuccessful },
+  } = useForm<TeacherInput>({
+    resolver: zodResolver(teacherSchema),
+  });
+
   const {
     data: teacher,
     isLoading,
@@ -477,112 +679,40 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
   } = api.teacher.getTeacher.useQuery({
     teacherId,
   });
-
-  const { toast } = useToast();
-  const [isPrefDialogOpen, setIsPrefDialogOpen] = useState(false);
-  // timePref state
-  const [timePreferences, setTimePreferences] = useState<TimePreference[]>([
-    {
-      day: "Monday",
-      classHour: [
-        ClassHour.C1,
-        ClassHour.C2,
-        ClassHour.C3,
-        ClassHour.C4,
-        ClassHour.C5,
-        ClassHour.C6,
-        ClassHour.C7,
-        ClassHour.C8,
-      ],
-    },
-    {
-      day: "Tuesday",
-      classHour: [
-        ClassHour.C1,
-        ClassHour.C2,
-        ClassHour.C3,
-        ClassHour.C4,
-        ClassHour.C5,
-        ClassHour.C6,
-        ClassHour.C7,
-        ClassHour.C8,
-      ],
-    },
-    {
-      day: "Wednesday",
-      classHour: [
-        ClassHour.C1,
-        ClassHour.C2,
-        ClassHour.C3,
-        ClassHour.C4,
-        ClassHour.C5,
-        ClassHour.C6,
-        ClassHour.C7,
-        ClassHour.C8,
-      ],
-    },
-    {
-      day: "Thursday",
-      classHour: [
-        ClassHour.C1,
-        ClassHour.C2,
-        ClassHour.C3,
-        ClassHour.C4,
-        ClassHour.C5,
-        ClassHour.C6,
-        ClassHour.C7,
-        ClassHour.C8,
-      ],
-    },
-    {
-      day: "Friday",
-      classHour: [
-        ClassHour.C1,
-        ClassHour.C2,
-        ClassHour.C3,
-        ClassHour.C4,
-        ClassHour.C5,
-        ClassHour.C6,
-        ClassHour.C7,
-        ClassHour.C8,
-      ],
-    },
-  ]);
-
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    setValue,
-    reset,
-    formState: { isSubmitting, isSubmitSuccessful },
-  } = useForm<TeacherInput>({
-    resolver: zodResolver(teacherSchema),
-  });
-
   const trpcContext = api.useContext();
   const { mutateAsync, isLoading: isEditing } =
     api.teacher.updateTeacher.useMutation({
-      onSuccess: () => {
+      onSuccess: async () => {
         toast({
           title: "Teacher edited successfully",
         });
 
         // invalidate teacher table
         void trpcContext.teacher.getTeachers.invalidate();
-        void refetch();
+        await refetch();
+
+        // setIsTeacherSet(false);
+        // setIsLessonListSet(false);
 
         // close the sheet
         void wait(1000).then(() => setOpenSheet(false));
       },
-      onError: (err) => {
+      onError: async (err) => {
         toast({
           variant: "destructive",
           title: "Error editing teacher",
           description: err.message,
         });
+
+        // setIsTeacherSet(false);
+        // setIsLessonListSet(false);
+        await refetch();
       },
     });
+  const { data: lessonData, isFetched: isLessonFetched } =
+    api.lesson.getLessons.useQuery();
+  const { data: department, isFetched: isDepartmentFetched } =
+    api.department.getDepartments.useQuery();
 
   const onSubmit = async (data: TeacherInput) => {
     try {
@@ -597,7 +727,34 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
   }, [isSubmitSuccessful, reset]);
 
   useEffect(() => {
+    // if (!isTeacherSet || isLessonListSet) return;
+
+    // for popover component
+    if (
+      selectedLessons.length !== 0 &&
+      isLessonFetched &&
+      lessonData?.lessons
+    ) {
+      const filteredLessons = lessonData.lessons.filter(
+        (lesson) =>
+          !selectedLessons.find((selected) => selected.id === lesson.id)
+      );
+
+      setLessonList(() => [...filteredLessons]);
+      // setIsLessonListSet(true);
+    } else {
+    }
+  }, [selectedLessons, isLessonFetched, lessonData]);
+
+  useEffect(() => {
     if (!isLoading) {
+      // if (!isLoading && !isTeacherSet)
+      setValue("id", teacher?.foundTeacher?.id);
+
+      const departmentId = teacher?.foundTeacher?.departmentId;
+
+      if (departmentId) setValue("departmentId", departmentId);
+
       const timePref = teacher?.foundTeacher?.TeacherWorkPreferance.map(
         (pref: TeacherWorkPreferance) => {
           return {
@@ -615,6 +772,20 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
           };
         });
       }
+
+      const teacherLessons = teacher?.foundTeacher?.TeacherLesson.map(
+        (lesson) => lesson.Lesson
+      );
+
+      if (teacherLessons) {
+        // for selected component
+        setValue(
+          "lessonIds",
+          teacherLessons.map((lesson) => lesson.id)
+        );
+        setSelectedLessons(() => [...teacherLessons]);
+      }
+      // setIsTeacherSet(true);
     }
   }, [isLoading, teacher, setValue]);
 
@@ -634,10 +805,22 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
     setWindowSize([window.innerWidth, window.innerHeight]);
   }, []);
 
+  useEffect(() => {
+    if (teacher) {
+      console.log("fetched teacher", teacher);
+      console.log("passed teacherId", teacherId);
+    }
+  }, [teacher, teacherId]);
+
   return (
     <Sheet open={openSheet} onOpenChange={setOpenSheet}>
       <SheetTrigger asChild>
-        <Button variant="default">Edit</Button>
+        <Button
+          onClick={() => console.log("button onclick", teacherId)}
+          variant="default"
+        >
+          Edit
+        </Button>
       </SheetTrigger>
 
       <SheetContent size={windowSize.at(0)! <= 1024 ? "full" : "default"}>
@@ -685,14 +868,40 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="department">Department</Label>
-                  <Input
-                    defaultValue={teacher?.foundTeacher?.department ?? ""}
-                    disabled={isLoading || isSubmitting || isEditing}
-                    type="text"
-                    id="department"
-                    {...register("department")}
-                  />
+                  <Label>Department</Label>
+                  <Controller
+                    name="departmentId"
+                    control={control}
+                    render={({ field: { onChange, value } }) => {
+                      return (
+                        <Select onValueChange={onChange} value={value}>
+                          <SelectTrigger
+                            disabled={isLoading || isSubmitting || isEditing}
+                            className="w-full"
+                          >
+                            <SelectValue placeholder="Select a department" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Departments</SelectLabel>
+                              {isDepartmentFetched &&
+                                department?.departments.map((department) => (
+                                  <SelectItem
+                                    key={department.id}
+                                    value={department.id}
+                                    onSelect={() => {
+                                      setValue("departmentId", department.id);
+                                    }}
+                                  >
+                                    {department.name}
+                                  </SelectItem>
+                                ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      );
+                    }}
+                  ></Controller>
                 </div>
                 <div>
                   <Label htmlFor="description">Description</Label>
@@ -853,6 +1062,92 @@ const EditTeacher = ({ teacherId }: EditTeacherProps) => {
                   </DialogContent>
                 </Dialog>
 
+                {selectedLessons.length > 0 && (
+                  <div className="flex max-w-full flex-row flex-wrap rounded-md border px-2 py-2">
+                    {selectedLessons.map((lesson) => (
+                      <div
+                        aria-disabled={isLoading || isSubmitting || isEditing}
+                        key={lesson.id}
+                        className=" mr-2 flex h-min max-w-[120px] items-center justify-center rounded-md border px-2 py-1 transition-colors hover:cursor-pointer hover:bg-accent"
+                        onClick={() => {
+                          // if (isLessonListSet) {
+                          setSelectedLessons(() =>
+                            selectedLessons.filter((l) => l !== lesson)
+                          );
+                          setLessonList((prev) => [...prev, lesson]);
+
+                          const prevLessonIds = getValues("lessonIds");
+                          if (prevLessonIds) {
+                            setValue(
+                              "lessonIds",
+                              prevLessonIds.filter((l) => l !== lesson.id)
+                            );
+                          }
+                          // }
+                        }}
+                      >
+                        <span className="shrink-[2] pr-2 text-xs">
+                          {lesson.name}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-5 w-5 p-0"
+                        >
+                          <X size={18} className="h-full w-full" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                  <PopoverTrigger
+                    disabled={isLoading || isSubmitting || isEditing}
+                    asChild
+                  >
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={isPopoverOpen}
+                      className="w-full justify-between"
+                    >
+                      Select lessons
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command className="w-80">
+                      <CommandInput placeholder="Search lesson..." />
+                      <CommandEmpty>No lesson found.</CommandEmpty>
+                      <CommandGroup>
+                        {lessonList.map((lesson) => (
+                          <CommandItem
+                            key={lesson.id}
+                            onSelect={() => {
+                              setSelectedLessons((prev) => [lesson, ...prev]);
+                              setLessonList(() =>
+                                lessonList.filter((l) => l !== lesson)
+                              );
+
+                              const prevLessonIds = getValues("lessonIds");
+
+                              setValue(
+                                "lessonIds",
+                                prevLessonIds
+                                  ? [...prevLessonIds, lesson.id]
+                                  : [lesson.id]
+                              );
+                            }}
+                          >
+                            {lesson.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+
                 <Button
                   disabled={isLoading || isSubmitting || isEditing}
                   type="submit"
@@ -891,7 +1186,7 @@ const Teachers: NextPage = (props) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        <div className="flex flex-col md:flex-row">
+        <div className="flex w-full flex-col md:flex-row">
           <CreateTeacher />
           <TeacherTableView />
         </div>

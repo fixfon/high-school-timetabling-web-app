@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
-import { hash } from "argon2";
+import { hash, verify } from "argon2";
 import { TRPCError } from "@trpc/server";
 import teacherSchema from "~/schemas/teacher";
 import { type Teacher } from "@prisma/client";
@@ -10,6 +10,12 @@ export const teacherRouter = createTRPCRouter({
     const teachers = await ctx.prisma.teacher.findMany({
       where: {
         organizationId: ctx.session.user.orgId,
+      },
+      include: {
+        Department: true,
+        TeacherWorkPreferance: true,
+        TeacherLesson: true,
+        User: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -36,7 +42,13 @@ export const teacherRouter = createTRPCRouter({
         },
         include: {
           TeacherWorkPreferance: true,
+          Department: true,
           User: true,
+          TeacherLesson: {
+            select: {
+              Lesson: true,
+            },
+          },
         },
       });
 
@@ -51,12 +63,13 @@ export const teacherRouter = createTRPCRouter({
       const {
         name,
         surname,
-        department,
+        departmentId,
         description,
         createUser,
         email,
         password,
         timePreferences,
+        lessonIds,
       } = input;
 
       const { orgId } = ctx.session.user;
@@ -91,8 +104,8 @@ export const teacherRouter = createTRPCRouter({
             organizationId: orgId,
             name,
             surname,
-            department,
             description,
+            departmentId,
           },
         });
 
@@ -117,8 +130,8 @@ export const teacherRouter = createTRPCRouter({
             organizationId: orgId,
             name,
             surname,
-            department,
             description,
+            departmentId,
           },
         });
       }
@@ -137,6 +150,17 @@ export const teacherRouter = createTRPCRouter({
       }
 
       // put lesson logic here
+      if (lessonIds) {
+        for (const lessonId of lessonIds) {
+          await ctx.prisma.teacherLesson.create({
+            data: {
+              organizationId: orgId,
+              teacherId: teacher.id,
+              lessonId,
+            },
+          });
+        }
+      }
 
       return {
         success: true,
@@ -145,16 +169,17 @@ export const teacherRouter = createTRPCRouter({
 
   updateTeacher: protectedProcedure
     .input(teacherSchema)
-    .mutation(({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const {
+        id,
         name,
         surname,
-        department,
+        departmentId,
         description,
-        createUser,
         email,
         password,
         timePreferences,
+        lessonIds,
       } = input;
 
       const { orgId } = ctx.session.user;
@@ -165,7 +190,283 @@ export const teacherRouter = createTRPCRouter({
         });
       }
 
-      // put lesson logic here
+      if (!id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Teacher id is required",
+        });
+      }
+
+      let foundTeacher = await ctx.prisma.teacher.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          User: true,
+          TeacherWorkPreferance: true,
+          TeacherLesson: true,
+        },
+      });
+
+      if (!foundTeacher) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Teacher not found",
+        });
+      }
+
+      console.log(input);
+
+      if (foundTeacher.name !== name) {
+        await ctx.prisma.teacher.update({
+          where: {
+            id,
+          },
+          data: {
+            name,
+          },
+        });
+        console.log("teacher name updated");
+
+        if (foundTeacher.User) {
+          await ctx.prisma.user.update({
+            where: {
+              id: foundTeacher.User.id,
+            },
+            data: {
+              name,
+            },
+          });
+          console.log("user name updated");
+        }
+      }
+
+      if (foundTeacher.surname !== surname) {
+        await ctx.prisma.teacher.update({
+          where: {
+            id,
+          },
+          data: {
+            surname,
+          },
+        });
+        console.log("teacher surname updated");
+
+        if (foundTeacher.User) {
+          await ctx.prisma.user.update({
+            where: {
+              id: foundTeacher.User.id,
+            },
+            data: {
+              surname,
+            },
+          });
+          console.log("user surname updated");
+        }
+      }
+
+      if (foundTeacher.departmentId !== departmentId) {
+        await ctx.prisma.teacher.update({
+          where: {
+            id,
+          },
+          data: {
+            departmentId,
+          },
+        });
+
+        console.log("teacher department updated");
+      }
+
+      if (foundTeacher.description !== description) {
+        await ctx.prisma.teacher.update({
+          where: {
+            id,
+          },
+          data: {
+            description,
+          },
+        });
+
+        console.log("teacher description updated");
+      }
+
+      if (timePreferences) {
+        for (const day of foundTeacher.TeacherWorkPreferance) {
+          const inputDay = timePreferences.find(
+            (inputDay) => inputDay.day === day.workingDay
+          );
+
+          if (!inputDay) continue;
+
+          // find differences between inputDay.classHour array and day.workingHour array
+          const toBeDeleted = day.workingHour.filter(
+            (hour) => !inputDay.classHour.includes(hour)
+          );
+
+          const toBeAdded = inputDay.classHour.filter(
+            (hour) => !day.workingHour.includes(hour)
+          );
+
+          if (toBeDeleted.length > 0 || toBeAdded.length > 0) {
+            // update workinghour array without deleting the day record
+            await ctx.prisma.teacherWorkPreferance.update({
+              where: {
+                id: day.id,
+              },
+              data: {
+                workingHour: {
+                  set: inputDay.classHour,
+                },
+              },
+            });
+          }
+        }
+        console.log("teacher time pref checked");
+      }
+
+      if (lessonIds) {
+        const addedLessons = lessonIds.filter(
+          (lessonId) =>
+            !foundTeacher.TeacherLesson.find(
+              (teacherLesson) => teacherLesson.lessonId === lessonId
+            )
+        );
+
+        const deletedLessons = foundTeacher.TeacherLesson.filter(
+          (teacherLesson) => !lessonIds.includes(teacherLesson.lessonId)
+        );
+
+        if (addedLessons.length > 0) {
+          for (const lessonId of addedLessons) {
+            await ctx.prisma.teacherLesson.create({
+              data: {
+                organizationId: orgId,
+                teacherId: foundTeacher.id,
+                lessonId,
+              },
+            });
+          }
+          console.log("teacher lesson added updated");
+        }
+
+        if (deletedLessons.length > 0) {
+          for (const teacherLesson of deletedLessons) {
+            await ctx.prisma.teacherLesson.delete({
+              where: {
+                id: teacherLesson.id,
+              },
+            });
+          }
+          console.log("teacher lesson deleted updated");
+        }
+      }
+
+      // delete user account
+      if (foundTeacher.userId && (!email || email === "")) {
+        // delete user account but not teacher record
+        // foundTeacher = await ctx.prisma.teacher.update({
+        //   where: {
+        //     id,
+        //   },
+        //   data: {
+        //     User: {
+        //       delete: true,
+        //     },
+        //   },
+        //   include: {
+        //     TeacherLesson: true,
+        //     TeacherWorkPreferance: true,
+        //     User: true,
+        //   },
+        // });
+        // console.log(foundTeacher);
+
+        console.log("teacher user acc deleted");
+      }
+
+      // create user account
+      if (!foundTeacher.userId && email && password) {
+        const hashedPassword = await hash(password);
+
+        await ctx.prisma.teacher.update({
+          where: {
+            id,
+          },
+          data: {
+            User: {
+              create: {
+                email,
+                password: hashedPassword,
+                name,
+                surname,
+                memberRole: "TEACHER",
+                organizationId: orgId,
+              },
+            },
+          },
+        });
+
+        console.log("teacher user created");
+      }
+
+      // update user password
+      if (
+        foundTeacher.userId &&
+        foundTeacher.User?.password &&
+        password &&
+        password !== ""
+      ) {
+        const verifyExistingPassword = await verify(
+          foundTeacher.User?.password,
+          password
+        );
+
+        if (!verifyExistingPassword) {
+          const hashedPassword = await hash(password);
+
+          await ctx.prisma.user.update({
+            where: {
+              id: foundTeacher.userId,
+            },
+            data: {
+              password: hashedPassword,
+            },
+          });
+
+          console.log("teacher user password updated");
+        }
+      }
+
+      // update user account
+      if (
+        foundTeacher.userId &&
+        foundTeacher.User?.email !== email &&
+        email !== ""
+      ) {
+        const foundUser = await ctx.prisma.user.findUnique({
+          where: {
+            email,
+          },
+        });
+        if (foundUser) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "User with this email already exists",
+          });
+        }
+
+        await ctx.prisma.user.update({
+          where: {
+            id: foundTeacher.userId,
+          },
+          data: {
+            email,
+          },
+        });
+
+        console.log("teacher user email updated");
+      }
 
       return {
         success: true,
@@ -201,6 +502,12 @@ export const teacherRouter = createTRPCRouter({
           },
         });
       }
+
+      await ctx.prisma.teacher.delete({
+        where: {
+          id: teacherId,
+        },
+      });
 
       return {
         success: true,
