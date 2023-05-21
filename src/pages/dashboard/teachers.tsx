@@ -1,5 +1,3 @@
-// TODO : Add required errors to fields
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { NextPage } from "next";
 import Head from "next/head";
@@ -250,7 +248,7 @@ const CreateTeacher = () => {
     setValue,
     control,
     reset,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<TeacherInput>({
     resolver: zodResolver(teacherSchema),
     defaultValues: {
@@ -322,8 +320,18 @@ const CreateTeacher = () => {
         onSubmit={handleSubmit(onSubmit)}
       >
         <div>
-          <Label htmlFor="name">Name</Label>
+          <Label
+            className={errors.name ? "text-destructive" : ""}
+            htmlFor="name"
+          >
+            Name
+          </Label>
           <Input
+            className={
+              errors.name
+                ? "border-destructive focus-visible:outline-destructive"
+                : ""
+            }
             disabled={isLoading || isSubmitting}
             type="text"
             id="name"
@@ -331,8 +339,18 @@ const CreateTeacher = () => {
           />
         </div>
         <div>
-          <Label htmlFor="surname">Surname</Label>
+          <Label
+            className={errors.surname ? "text-destructive" : ""}
+            htmlFor="surname"
+          >
+            Surname
+          </Label>
           <Input
+            className={
+              errors.surname
+                ? "border-destructive focus-visible:outline-destructive"
+                : ""
+            }
             disabled={isLoading || isSubmitting}
             type="text"
             id="surname"
@@ -340,7 +358,9 @@ const CreateTeacher = () => {
           />
         </div>
         <div>
-          <Label>Department</Label>
+          <Label className={errors.departmentId ? "text-destructive" : ""}>
+            Department
+          </Label>
           <Controller
             name="departmentId"
             control={control}
@@ -349,7 +369,11 @@ const CreateTeacher = () => {
                 <Select onValueChange={onChange} value={value}>
                   <SelectTrigger
                     disabled={isSubmitting || isLoading}
-                    className="w-full"
+                    className={
+                      errors.departmentId
+                        ? "w-full border-destructive focus-visible:outline-destructive"
+                        : "w-full"
+                    }
                   >
                     <SelectValue placeholder="Select a department" />
                   </SelectTrigger>
