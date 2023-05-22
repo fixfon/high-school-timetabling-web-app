@@ -1136,7 +1136,7 @@ const Teachers: NextPage = (props) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        <div className="flex w-full flex-col md:flex-row">
+        <div className="flex flex-col md:flex-row w-full">
           <CreateTeacher />
           <TeacherTableView />
         </div>
