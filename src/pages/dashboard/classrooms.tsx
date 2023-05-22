@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import Layout from "~/components/dashboard/Layout";
 import { api } from "~/utils/api";
-import { ClassHour, type Classroom } from "@prisma/client";
+import { ClassHour, Lesson, type Classroom } from "@prisma/client";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -148,9 +148,12 @@ const ClassLevelMap = {
 
 const CreateClassroom = () => {
   const { toast } = useToast();
+  const [isLessonListSet, setLessonListSet] = useState(false);
   const [isPopoverOpen, setPopoverOpen] = useState(false);
   const [isLessonDialogOpen, setLessonDialogOpen] = useState(false);
+  const [isLessonPopoversOpen, setLessonPopoversOpen] = useState<boolean[]>([]);
   const isInitialRender = useRef(true);
+  const [lessonList, setLessonList] = useState<Lesson[]>([]);
 
   const {
     register,
@@ -161,7 +164,7 @@ const CreateClassroom = () => {
     reset,
     clearErrors,
     trigger,
-    formState: { isSubmitting, errors, isSubmitSuccessful },
+    formState: { isSubmitting, errors },
   } = useForm<ClassroomInput>({
     resolver: zodResolver(classroomSchema),
     defaultValues: {
@@ -184,8 +187,10 @@ const CreateClassroom = () => {
   const appendLesson = () => {
     append({
       lessonId: "",
+      lessonName: "",
       weeklyHour: 0,
     });
+    setLessonPopoversOpen((prev) => [...prev, false]);
 
     if (errors.lessons) clearErrors("lessons");
   };
@@ -197,6 +202,11 @@ const CreateClassroom = () => {
         title: "Classroom created successfully",
       });
 
+      // reset form
+      setLessonListSet(false);
+      reset();
+      reset({ lessons: [] });
+
       // invalidate classroom table
       void trpcContext.classroom.getClassrooms.invalidate();
     },
@@ -206,26 +216,27 @@ const CreateClassroom = () => {
         title: "Error creating classroom",
         description: err.message,
       });
+
+      // reset form
+      setLessonListSet(false);
+      reset();
+      reset({ lessons: [] });
     },
   });
   const { data: teachers, isLoading: isTeachersLoading } =
     api.teacher.getTeachers.useQuery();
-  const { data: lessons, isLoading: isLessonsLoading } =
-    api.lesson.getLessons.useQuery();
+  const {
+    data: lessons,
+    isLoading: isLessonsLoading,
+    isRefetching: isLessonsRefetching,
+  } = api.lesson.getLessons.useQuery();
 
-  const onSubmit = (data: ClassroomInput) => {
+  const onSubmit = async (data: ClassroomInput) => {
     try {
       console.log(data);
-      // await mutateAsync(data);
+      await mutateAsync(data);
     } catch (err) {}
   };
-
-  useEffect(() => {
-    if (isSubmitSuccessful) {
-      console.log("reset");
-      reset();
-    }
-  }, [isSubmitSuccessful, reset]);
 
   useEffect(() => {
     if (!fields.length && !isInitialRender.current) {
@@ -235,15 +246,19 @@ const CreateClassroom = () => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
     }
-  }, [fields, setValue, trigger]);
+  }, [fields, trigger]);
 
   useEffect(() => {
-    console.log(lessonValue);
-  }, [lessonValue]);
-
-  useEffect(() => {
-    console.log(errors.lessons);
-  }, [errors.lessons]);
+    if (
+      !isLessonsLoading &&
+      !isLessonsRefetching &&
+      lessons &&
+      !isLessonListSet
+    ) {
+      setLessonList(lessons.lessons);
+      setLessonListSet(true);
+    }
+  }, [lessons, isLessonsLoading, isLessonsRefetching, isLessonListSet]);
 
   return (
     <div className="flex w-3/4 flex-col items-center justify-start pt-12 lg:w-2/5">
@@ -402,6 +417,7 @@ const CreateClassroom = () => {
             <Popover open={isPopoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
+                  disabled={isSubmitting || isLoading}
                   variant="outline"
                   role="combobox"
                   aria-expanded={isPopoverOpen}
@@ -474,55 +490,171 @@ const CreateClassroom = () => {
             <Button
               disabled={isSubmitting || isLoading}
               variant="outline"
-              className="flex items-center justify-center gap-2"
+              className={cn("flex items-center justify-center gap-2", {
+                "border-destructive text-destructive": errors.lessons,
+              })}
             >
               <ExternalLink className="h-4 w-4" />
               Semester Lessons
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[680px]">
+          <DialogContent className="max-h-screen overflow-y-auto sm:max-w-[740px]">
             <DialogHeader>
               <DialogTitle>Set Semester Lessons</DialogTitle>
               <DialogDescription>
                 Set the semester lessons for this classroom.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead></TableHead>
-                    <TableHead>Lesson Name</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Weekly Hour</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell></TableCell>
-                  </TableRow>
-                  {fields.map((lesson, lessonIndex) => (
-                    <TableRow key={lesson.id}>
-                      <TableCell>
-                        <Button
-                          variant="link"
-                          onClick={() => remove(lessonIndex)}
-                        >
-                          <Trash />
-                        </Button>
-                      </TableCell>
-                      <TableCell>
-                        <Controller
-                          control={control}
-                          name={`lessons.${lessonIndex}.lessonId`}
-                          render={({ field }) => <Input {...field} />}
-                        ></Controller>
-                      </TableCell>
-                      <TableCell>
-                        <span>Type</span>
-                      </TableCell>
-                      <TableCell>
-                        {/* <Controller
+            <Table className="h-8 overflow-y-auto py-4">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-1/12">Remove</TableHead>
+                  <TableHead className="w-2/5">Lesson Name</TableHead>
+                  <TableHead className="w-1/3">Type</TableHead>
+                  <TableHead>Weekly Hour</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {fields.map((lessonItem, lessonIndex) => (
+                  <TableRow key={lessonItem.id}>
+                    <TableCell>
+                      <Button
+                        disabled={isSubmitting}
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          // add removed lesson to lessonList
+                          const removedItem = getValues(
+                            `lessons.${lessonIndex}`
+                          );
+                          if (removedItem) {
+                            const currentLesson = lessons?.lessons?.find(
+                              (l) => l.id === removedItem.lessonId
+                            );
+                            if (currentLesson) {
+                              setLessonList((prev) => [...prev, currentLesson]);
+                            }
+                          }
+
+                          remove(lessonIndex);
+                        }}
+                      >
+                        <Trash />
+                      </Button>
+                    </TableCell>
+                    <TableCell className="w-2/5">
+                      <Controller
+                        control={control}
+                        name={`lessons.${lessonIndex}.lessonName`}
+                        render={({ field: { value, ref, onChange } }) => (
+                          <Popover
+                            open={isLessonPopoversOpen[lessonIndex]}
+                            onOpenChange={(isOpen) =>
+                              setLessonPopoversOpen((prev) => {
+                                const newPopovers = [...prev];
+                                newPopovers[lessonIndex] = isOpen;
+                                return newPopovers;
+                              })
+                            }
+                          >
+                            <PopoverTrigger asChild>
+                              <Button
+                                disabled={isSubmitting}
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={
+                                  isLessonPopoversOpen[lessonIndex]
+                                }
+                                className="w-full justify-between"
+                              >
+                                {value && value !== ""
+                                  ? value
+                                  : "Select a lesson"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-full p-0"
+                              align="start"
+                            >
+                              <Command className="w-80">
+                                <CommandInput placeholder="Find a lesson" />
+                                <CommandEmpty>No lesson found.</CommandEmpty>
+                                <CommandGroup>
+                                  {!isLessonsLoading &&
+                                    lessonList.map((lesson) => (
+                                      <CommandItem
+                                        key={lesson.id}
+                                        ref={ref}
+                                        onSelect={() => {
+                                          onChange(lesson.name);
+
+                                          // if changing the lesson add previous lesson to lessonList
+                                          // and remove the new lesson from lessonList
+                                          // else only remove the lesson from lessonList
+
+                                          const currentLessonId = getValues(
+                                            `lessons.${lessonIndex}.lessonId`
+                                          );
+
+                                          if (currentLessonId !== "") {
+                                            const currentLesson =
+                                              lessons?.lessons?.find(
+                                                (l) => l.id === currentLessonId
+                                              );
+                                            if (currentLesson) {
+                                              setLessonList((prev) => [
+                                                ...prev,
+                                                currentLesson,
+                                              ]);
+                                            }
+                                          }
+
+                                          setLessonList((prev) =>
+                                            prev.filter(
+                                              (l) => l.id !== lesson.id
+                                            )
+                                          );
+
+                                          setValue(
+                                            `lessons.${lessonIndex}.lessonId`,
+                                            lesson.id
+                                          );
+                                          setValue(
+                                            `lessons.${lessonIndex}.lessonName`,
+                                            lesson.name
+                                          );
+
+                                          setLessonPopoversOpen((prev) => {
+                                            const newPopovers = [...prev];
+                                            newPopovers[lessonIndex] = false;
+                                            return newPopovers;
+                                          });
+                                        }}
+                                      >
+                                        {lesson.name}
+                                      </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      ></Controller>
+                    </TableCell>
+                    <TableCell className="w-1/3 text-xs">
+                      <span>
+                        {
+                          lessons?.lessons.find(
+                            (l) =>
+                              l.id ===
+                              getValues(`lessons.${lessonIndex}.lessonId`)
+                          )?.type
+                        }
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {/* <Controller
                           control={control}
                           name={`lessons.${lessonIndex}.weeklyHour`}
                           rules={{ pattern: /^[0-9]*$/ }}
@@ -530,24 +662,35 @@ const CreateClassroom = () => {
                             <Input type="number" {...field} />
                           )}
                         ></Controller> */}
-                        <Input
-                          type="number"
-                          {...register(`lessons.${lessonIndex}.weeklyHour`, {
-                            valueAsNumber: true,
-                          })}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-                <TableFooter>
-                  <TableRow>
-                    <TableCell>
-                      <Button onClick={appendLesson}>Add Lesson</Button>
+                      <Input
+                        disabled={isSubmitting}
+                        className="w-20"
+                        type="number"
+                        max={10}
+                        {...register(`lessons.${lessonIndex}.weeklyHour`, {
+                          valueAsNumber: true,
+                        })}
+                      />
                     </TableCell>
                   </TableRow>
-                </TableFooter>
-              </Table>
+                ))}
+              </TableBody>
+            </Table>
+            <div className="flex items-center justify-between">
+              <Button
+                disabled={isSubmitting}
+                className="w-1/4"
+                onClick={appendLesson}
+              >
+                Add Lesson
+              </Button>
+              <span className="font-semibold">
+                Total Lessons: {lessonValue?.length}
+              </span>
+              <span className="pr-12 font-semibold">
+                Total Hours:{" "}
+                {lessonValue?.reduce((acc, curr) => acc + curr.weeklyHour, 0)}
+              </span>
             </div>
             <DialogFooter>
               <Button

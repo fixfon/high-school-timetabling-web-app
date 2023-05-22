@@ -3,6 +3,7 @@ import { z } from "zod";
 
 const lessonSchema = z.object({
   lessonId: z.string(),
+  lessonName: z.string(),
   weeklyHour: z.number(),
 });
 
@@ -17,7 +18,20 @@ const classroomSchema = z
     classLevel: z.nativeEnum(ClassLevel),
     branch: z.nativeEnum(Object.assign(Branch, { none: "none" })).nullish(),
     advisorTeacherId: z.string().nullish(),
-    lessons: z.array(lessonSchema).optional(),
+    lessons: z
+      .array(lessonSchema)
+      .refine((data) => {
+        // check the total weeklyHour of the lesson array do not allow to exceed 40
+        const totalWeeklyHour = data.reduce(
+          (acc, curr) => acc + curr.weeklyHour,
+          0
+        );
+        return totalWeeklyHour <= 40;
+      })
+      .refine((data) => {
+        // check the array of lessons has at least one lesson
+        return data.length > 0;
+      }),
   })
   .refine((data) => {
     if (
@@ -28,7 +42,6 @@ const classroomSchema = z
     }
     return true;
   });
-
 export type ClassroomInput = z.infer<typeof classroomSchema>;
 
 export default classroomSchema;
