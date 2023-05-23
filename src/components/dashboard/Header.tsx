@@ -11,6 +11,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Avatar } from "../ui/avatar";
 import { AvatarImage } from "../ui/avatar";
 import { AvatarFallback } from "../ui/avatar";
+import Image from "next/image";
 
 export default function Header() {
   const { data: session, status } = useSession();
@@ -19,7 +20,7 @@ export default function Header() {
     <>
       <header className="h-14 w-full border-b bg-background shadow-sm">
         <div className="container flex h-full w-full items-center justify-between px-4 py-2 lg:px-0">
-          <h1 className="text-2xl font-medium">TimetablePRO</h1>
+          <Image src="/logo-light.svg" alt="TimetablePRO Logo Light" height={56} width={200} />
           {status === "loading" ? (
             <div>Loading...</div>
           ) : (
