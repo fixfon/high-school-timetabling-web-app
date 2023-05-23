@@ -8,7 +8,7 @@ const AboutUs: NextPage = (props) => {
   return (
     <>
       <Head>
-        <title>TimetablePro</title>
+        <title>About Us | TimetablePro</title>
         <meta
           name="description"
           content="TimetablePro | High school timetable application that offers the best optimized schedule for your entire semester."
