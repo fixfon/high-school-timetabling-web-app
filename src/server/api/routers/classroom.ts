@@ -6,15 +6,32 @@ import classroomSchema from "~/schemas/classroom";
 import { TRPCError } from "@trpc/server";
 
 export const classroomRouter = createTRPCRouter({
-  getClassrooms: protectedProcedure.query(({ ctx }) => {
-    // const classrooms = await ctx.prisma.classRoom.findMany({
-    //   where: {
-    //     organizationId: "1",
-    //   },
-    // });
+  getClassrooms: protectedProcedure.query(async ({ ctx }) => {
+    const orgId = ctx.session.user.orgId;
+
+    if (!orgId) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      });
+    }
+
+    const classrooms = await ctx.prisma.classroom.findMany({
+      where: {
+        organizationId: orgId,
+      },
+      include: {
+        ClassroomLesson: {
+          include: {
+            Lesson: true,
+          },
+        },
+        Teacher: true,
+      },
+    });
 
     return {
-      success: true,
+      classrooms: classrooms,
     };
   }),
 

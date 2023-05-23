@@ -9,6 +9,7 @@ const lessonSchema = z.object({
 
 const classroomSchema = z
   .object({
+    id: z.string().optional(),
     // select A-Z
     code: z
       .string()

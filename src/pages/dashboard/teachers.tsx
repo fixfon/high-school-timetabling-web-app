@@ -116,7 +116,6 @@ const teacherColumns: ColumnDef<
     accessorKey: "edit",
     header: "",
     cell: ({ row }) => {
-      const { id } = row.original;
       return <EditTeacher row={row} />;
     },
   },
