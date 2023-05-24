@@ -228,7 +228,6 @@ export const teacherRouter = createTRPCRouter({
             name,
           },
         });
-
         if (foundTeacher.User) {
           await ctx.prisma.user.update({
             where: {

@@ -12,13 +12,16 @@ const teacherSchema = z.object({
   surname: z.string().min(3).max(30),
   description: z.string().max(240).optional(),
   departmentId: z.string(),
-  createUser: z.boolean().optional().default(false),
+  createUser: z.boolean().default(false).optional(),
   email: z.string().email().optional().or(z.literal("")),
   password: z.string().min(6).max(20).optional().or(z.literal("")),
   lessonIds: z.array(z.string()),
-  timePreferences: z.array(teacherTimePreferencesSchema).optional(),
+  timePreferences: z.array(teacherTimePreferencesSchema),
 });
 
 export type TeacherInput = z.infer<typeof teacherSchema>;
+export type TeacherTimePreferenceInput = z.infer<
+  typeof teacherTimePreferencesSchema
+>;
 
 export default teacherSchema;

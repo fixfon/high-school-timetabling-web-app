@@ -1,15 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useReducer, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { useCallback, useEffect, useReducer, useState } from "react";
+import { useForm } from "react-hook-form";
 import Layout from "~/components/dashboard/Layout";
 import { api } from "~/utils/api";
-import teacherSchema, { type TeacherInput } from "~/schemas/teacher";
+import teacherSchema, {
+  type TeacherTimePreferenceInput,
+  type TeacherInput,
+} from "~/schemas/teacher";
 import {
   ClassHour,
   type Teacher,
-  type Day,
   type TeacherWorkPreferance,
   type Lesson,
   type Department,
@@ -27,7 +29,6 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/components/ui/use-toast";
 import { ChevronsUpDown, ExternalLink, Trash2, X } from "lucide-react";
@@ -70,11 +71,622 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import { Checkbox } from "~/components/ui/checkbox";
+import { cn } from "~/utils/cn";
 
-interface TimePreference {
-  day: Day;
-  classHour: ClassHour[];
-}
+const baseTimePref: TeacherTimePreferenceInput[] = [
+  {
+    day: "Monday",
+    classHour: [
+      ClassHour.C1,
+      ClassHour.C2,
+      ClassHour.C3,
+      ClassHour.C4,
+      ClassHour.C5,
+      ClassHour.C6,
+      ClassHour.C7,
+      ClassHour.C8,
+    ],
+  },
+  {
+    day: "Tuesday",
+    classHour: [
+      ClassHour.C1,
+      ClassHour.C2,
+      ClassHour.C3,
+      ClassHour.C4,
+      ClassHour.C5,
+      ClassHour.C6,
+      ClassHour.C7,
+      ClassHour.C8,
+    ],
+  },
+  {
+    day: "Wednesday",
+    classHour: [
+      ClassHour.C1,
+      ClassHour.C2,
+      ClassHour.C3,
+      ClassHour.C4,
+      ClassHour.C5,
+      ClassHour.C6,
+      ClassHour.C7,
+      ClassHour.C8,
+    ],
+  },
+  {
+    day: "Thursday",
+    classHour: [
+      ClassHour.C1,
+      ClassHour.C2,
+      ClassHour.C3,
+      ClassHour.C4,
+      ClassHour.C5,
+      ClassHour.C6,
+      ClassHour.C7,
+      ClassHour.C8,
+    ],
+  },
+  {
+    day: "Friday",
+    classHour: [
+      ClassHour.C1,
+      ClassHour.C2,
+      ClassHour.C3,
+      ClassHour.C4,
+      ClassHour.C5,
+      ClassHour.C6,
+      ClassHour.C7,
+      ClassHour.C8,
+    ],
+  },
+];
+
+type TeacherFormProps = {
+  defaultValue?: TeacherInput;
+  onSubmit: (data: TeacherInput) => Promise<void>;
+  isMutating?: boolean;
+};
+
+const TeacherForm = ({
+  defaultValue,
+  onSubmit,
+  isMutating,
+}: TeacherFormProps) => {
+  const [isPrefDialogOpen, setIsPrefDialogOpen] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isLessonSet, setIsLessonSet] = useState(false);
+  const [selectedLessons, setSelectedLessons] = useState<Lesson[]>([]);
+  const [availableLessons, setAvailableLessons] = useState<Lesson[]>([]);
+
+  const form = useForm<TeacherInput>({
+    resolver: zodResolver(teacherSchema),
+    mode: "onChange",
+    defaultValues: {
+      id: defaultValue?.id ?? undefined,
+      name: defaultValue?.name ?? "",
+      surname: defaultValue?.surname ?? "",
+      description: defaultValue?.description ?? "",
+      createUser: defaultValue?.email ? true : false,
+      email: defaultValue?.email ?? "",
+      password: "",
+      departmentId: defaultValue?.departmentId ?? undefined,
+      timePreferences: defaultValue?.timePreferences ?? baseTimePref,
+      lessonIds: defaultValue?.lessonIds ?? [],
+    },
+  });
+
+  const createUserChecked = form.watch("createUser");
+
+  const { data: department, isFetched: isDepartmentFetched } =
+    api.department.getDepartments.useQuery(undefined, {
+      enabled: true,
+    });
+
+  const {
+    data: lesson,
+    isFetched: isLessonFetched,
+    refetch: refetchLesson,
+  } = api.lesson.getLessons.useQuery();
+
+  const formSubmit = async (values: TeacherInput) => {
+    await onSubmit(values);
+    form.reset();
+    setSelectedLessons([]);
+    setIsLessonSet(false);
+    await refetchLesson();
+  };
+
+  useEffect(() => {
+    if (isLessonFetched && !isLessonSet) {
+      if (defaultValue?.lessonIds && defaultValue.lessonIds?.length > 0) {
+        const selected = lesson?.lessons.filter((lesson) =>
+          defaultValue.lessonIds?.includes(lesson.id)
+        );
+        setSelectedLessons(selected ?? []);
+        setAvailableLessons(
+          lesson?.lessons.filter(
+            (lesson) => !defaultValue.lessonIds?.includes(lesson.id)
+          ) ?? []
+        );
+
+        form.setValue("lessonIds", [...defaultValue.lessonIds]);
+      } else {
+        setAvailableLessons(lesson?.lessons ?? []);
+      }
+      setIsLessonSet(true);
+    }
+  }, [defaultValue, isLessonFetched, isLessonSet, lesson?.lessons, form]);
+
+  return (
+    <Form {...form}>
+      <form
+        className="mt-8 flex w-full flex-col space-y-3 px-8"
+        onSubmit={form.handleSubmit(formSubmit)}
+      >
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input
+                  disabled={form.formState.isSubmitting || !!isMutating}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="surname"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Surname</FormLabel>
+              <FormControl>
+                <Input
+                  disabled={form.formState.isSubmitting || !!isMutating}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="departmentId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Department</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger
+                    disabled={form.formState.isSubmitting || !!isMutating}
+                  >
+                    <SelectValue placeholder="Select a department" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Departments</SelectLabel>
+                    {isDepartmentFetched &&
+                      department?.departments.map((department) => (
+                        <SelectItem key={department.id} value={department.id}>
+                          {department.name}
+                        </SelectItem>
+                      ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  disabled={form.formState.isSubmitting || !!isMutating}
+                  placeholder="Description about the teacher"
+                  className="resize-none"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="createUser"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  disabled={form.formState.isSubmitting || !!isMutating}
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Create User Account</FormLabel>
+                <FormDescription>
+                  You can select to create a user account to your teacher
+                </FormDescription>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {createUserChecked && (
+          <>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={form.formState.isSubmitting || !!isMutating}
+                      type="email"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={form.formState.isSubmitting || !!isMutating}
+                      type="password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
+
+        <FormField
+          control={form.control}
+          name="timePreferences"
+          render={() => (
+            <FormItem>
+              <FormLabel>Teacher Time Preferences</FormLabel>
+              <FormDescription>
+                Set the days and class hours the teacher is available.
+              </FormDescription>
+              <Dialog
+                open={isPrefDialogOpen}
+                onOpenChange={setIsPrefDialogOpen}
+              >
+                <DialogTrigger className="w-full" asChild>
+                  <Button
+                    disabled={form.formState.isSubmitting || !!isMutating}
+                    variant="outline"
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Time Preferences
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[680px]">
+                  <DialogHeader>
+                    <DialogTitle>Edit Time Preferences</DialogTitle>
+                    <DialogDescription>
+                      Set the days and class hours the teacher is available.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Hour / Day</TableHead>
+                          <TableHead>Hour 1</TableHead>
+                          <TableHead>Hour 2</TableHead>
+                          <TableHead>Hour 3</TableHead>
+                          <TableHead>Hour 4</TableHead>
+                          <TableHead>Hour 5</TableHead>
+                          <TableHead>Hour 6</TableHead>
+                          <TableHead>Hour 7</TableHead>
+                          <TableHead>Hour 8</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {Array.from([
+                          "Monday",
+                          "Tuesday",
+                          "Wednesday",
+                          "Thursday",
+                          "Friday",
+                        ]).map((day, dayIndex) => (
+                          <FormField
+                            key={dayIndex}
+                            control={form.control}
+                            name={`timePreferences.${dayIndex}`}
+                            render={() => (
+                              <TableRow key={dayIndex}>
+                                <TableCell>{day}</TableCell>
+                                {Array.from(
+                                  [
+                                    ClassHour.C1,
+                                    ClassHour.C2,
+                                    ClassHour.C3,
+                                    ClassHour.C4,
+                                    ClassHour.C5,
+                                    ClassHour.C6,
+                                    ClassHour.C7,
+                                    ClassHour.C8,
+                                  ],
+                                  (elem, i) => (
+                                    <FormField
+                                      key={i}
+                                      control={form.control}
+                                      name={`timePreferences.${dayIndex}.classHour`}
+                                      render={({ field }) => (
+                                        <TableCell key={i}>
+                                          <FormItem>
+                                            <FormControl>
+                                              <Checkbox
+                                                disabled={
+                                                  form.formState.isSubmitting ||
+                                                  !!isMutating
+                                                }
+                                                id={`${dayIndex}-${elem}`}
+                                                checked={field.value?.includes(
+                                                  elem
+                                                )}
+                                                onCheckedChange={(checked) => {
+                                                  return checked
+                                                    ? field.onChange([
+                                                        ...field.value,
+                                                        elem,
+                                                      ])
+                                                    : field.onChange(
+                                                        field.value.filter(
+                                                          (e) => e !== elem
+                                                        )
+                                                      );
+                                                }}
+                                              />
+                                            </FormControl>
+                                          </FormItem>
+                                        </TableCell>
+                                      )}
+                                    />
+                                  )
+                                )}
+                              </TableRow>
+                            )}
+                          />
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="default"
+                      type="submit"
+                      onClick={() => setIsPrefDialogOpen(false)}
+                    >
+                      Save
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </FormItem>
+          )}
+        />
+
+        {selectedLessons.length > 0 && (
+          <FormField
+            control={form.control}
+            name="lessonIds"
+            render={() => (
+              <FormItem>
+                <FormLabel>Selected Lessons</FormLabel>
+                <FormDescription>
+                  View or remove selected lessons
+                </FormDescription>
+                <div className="flex max-w-full flex-row flex-wrap rounded-md border px-2 py-2">
+                  {selectedLessons.map((lesson, index) => (
+                    <FormControl key={index}>
+                      <div
+                        key={index}
+                        className="mr-2 flex h-min max-w-[120px] items-center justify-center rounded-md border px-2 py-1 transition-colors hover:cursor-pointer hover:bg-accent"
+                        onClick={() => {
+                          if (form.formState.isSubmitting || !!isMutating)
+                            return;
+
+                          const prevLessonIds = form.getValues("lessonIds");
+                          if (prevLessonIds) {
+                            form.setValue(
+                              "lessonIds",
+                              prevLessonIds.filter((l) => l !== lesson.id)
+                            );
+
+                            setSelectedLessons((prev) =>
+                              prev.filter((l) => l !== lesson)
+                            );
+                            setAvailableLessons((prev) => [...prev, lesson]);
+                          }
+                        }}
+                      >
+                        <span className="shrink-[2] pr-2 text-xs">
+                          {lesson.name}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-5 w-5 p-0"
+                        >
+                          <X size={18} className="h-full w-full" />
+                        </Button>
+                      </div>
+                    </FormControl>
+                  ))}
+                </div>
+              </FormItem>
+            )}
+          />
+        )}
+
+        <FormField
+          control={form.control}
+          name="lessonIds"
+          render={({ field }) => (
+            <FormItem>
+              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      disabled={form.formState.isSubmitting || !!isMutating}
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full justify-between",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      Select lesson
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command className="w-80">
+                    <CommandInput placeholder="Search lesson..." />
+                    <CommandEmpty>No lesson found.</CommandEmpty>
+                    <CommandGroup>
+                      {availableLessons.map((lesson) => (
+                        <CommandItem
+                          key={lesson.id}
+                          onSelect={() => {
+                            // push value to form lessonId array
+                            const prevLessonIds = form.getValues("lessonIds");
+                            if (prevLessonIds) {
+                              form.setValue("lessonIds", [
+                                ...prevLessonIds,
+                                lesson.id,
+                              ]);
+                            } else {
+                              form.setValue("lessonIds", [lesson.id]);
+                            }
+
+                            // add selected lesson to selected lessons
+                            setSelectedLessons((prev) => [lesson, ...prev]);
+
+                            // remove selected lesson from available lessons
+                            setAvailableLessons((prev) =>
+                              prev.filter((l) => l.id !== lesson.id)
+                            );
+                          }}
+                        >
+                          {lesson.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button
+          disabled={form.formState.isSubmitting || !!isMutating}
+          type="submit"
+        >
+          {form.formState.isSubmitting || !!isMutating ? (
+            <>
+              <Oval
+                height={20}
+                width={20}
+                strokeWidth={4}
+                strokeWidthSecondary={3}
+                color="#5090FF"
+                secondaryColor="#FFFFFF"
+              />
+              <span>Submit</span>
+            </>
+          ) : (
+            "Submit"
+          )}
+        </Button>
+      </form>
+    </Form>
+  );
+};
+
+const CreateTeacher = () => {
+  const { toast } = useToast();
+
+  const trpcContext = api.useContext();
+  const { mutateAsync, isLoading: isMutating } =
+    api.teacher.createTeacher.useMutation({
+      onSuccess: async () => {
+        toast({
+          title: "Teacher created successfully",
+        });
+        // invalidate teacher table
+        await trpcContext.teacher.getTeachers.invalidate();
+      },
+      onError: (err) => {
+        toast({
+          variant: "destructive",
+          title: "Error creating teacher",
+          description: err.message,
+        });
+      },
+    });
+
+  const onSubmit = async (data: TeacherInput) => {
+    try {
+      await mutateAsync(data);
+    } catch (err) {}
+  };
+
+  return (
+    <div className="flex w-3/4 flex-col items-center justify-start pt-12 lg:w-2/5">
+      <h1 className="text-2xl font-bold">Create Teacher</h1>
+      <TeacherForm onSubmit={onSubmit} isMutating={isMutating} />
+    </div>
+  );
+};
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -159,500 +771,6 @@ const TeacherTableView = () => {
   );
 };
 
-const baseTimePref: TimePreference[] = [
-  {
-    day: "Monday",
-    classHour: [
-      ClassHour.C1,
-      ClassHour.C2,
-      ClassHour.C3,
-      ClassHour.C4,
-      ClassHour.C5,
-      ClassHour.C6,
-      ClassHour.C7,
-      ClassHour.C8,
-    ],
-  },
-  {
-    day: "Tuesday",
-    classHour: [
-      ClassHour.C1,
-      ClassHour.C2,
-      ClassHour.C3,
-      ClassHour.C4,
-      ClassHour.C5,
-      ClassHour.C6,
-      ClassHour.C7,
-      ClassHour.C8,
-    ],
-  },
-  {
-    day: "Wednesday",
-    classHour: [
-      ClassHour.C1,
-      ClassHour.C2,
-      ClassHour.C3,
-      ClassHour.C4,
-      ClassHour.C5,
-      ClassHour.C6,
-      ClassHour.C7,
-      ClassHour.C8,
-    ],
-  },
-  {
-    day: "Thursday",
-    classHour: [
-      ClassHour.C1,
-      ClassHour.C2,
-      ClassHour.C3,
-      ClassHour.C4,
-      ClassHour.C5,
-      ClassHour.C6,
-      ClassHour.C7,
-      ClassHour.C8,
-    ],
-  },
-  {
-    day: "Friday",
-    classHour: [
-      ClassHour.C1,
-      ClassHour.C2,
-      ClassHour.C3,
-      ClassHour.C4,
-      ClassHour.C5,
-      ClassHour.C6,
-      ClassHour.C7,
-      ClassHour.C8,
-    ],
-  },
-];
-
-const CreateTeacher = () => {
-  const { toast } = useToast();
-  const [isPrefDialogOpen, setIsPrefDialogOpen] = useState(false);
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [isLessonListSet, setIsLessonListSet] = useState(false);
-  // timePref state
-  const [timePreferences, setTimePreferences] = useState<TimePreference[]>([
-    ...baseTimePref,
-  ]);
-  const [selectedLessons, setSelectedLessons] = useState<Lesson[]>([]);
-  const [lessonList, setLessonList] = useState<Lesson[]>([]);
-
-  const {
-    register,
-    unregister,
-    handleSubmit,
-    getValues,
-    setValue,
-    control,
-    reset,
-    formState: { isSubmitting, errors },
-  } = useForm<TeacherInput>({
-    resolver: zodResolver(teacherSchema),
-    defaultValues: {
-      departmentId: undefined,
-      timePreferences: baseTimePref,
-      lessonIds: selectedLessons.map((lesson) => lesson.id),
-      createUser: false,
-    },
-  });
-  const createUserAccountChecked = useWatch({ control, name: "createUser" });
-
-  const trpcContext = api.useContext();
-  const { mutateAsync, isLoading } = api.teacher.createTeacher.useMutation({
-    onSuccess: async () => {
-      toast({
-        title: "Teacher created successfully",
-      });
-      // reset form
-      setTimePreferences([...baseTimePref]);
-      setSelectedLessons([]);
-      setIsLessonListSet(false);
-      await refetchLesson();
-      reset();
-      // invalidate teacher table
-      void trpcContext.teacher.getTeachers.invalidate();
-    },
-    onError: (err) => {
-      toast({
-        variant: "destructive",
-        title: "Error creating teacher",
-        description: err.message,
-      });
-    },
-  });
-  const {
-    data: lessonData,
-    isFetched: isLessonFetched,
-    refetch: refetchLesson,
-  } = api.lesson.getLessons.useQuery();
-  const { data: department, isFetched: isDepartmentFetched } =
-    api.department.getDepartments.useQuery();
-
-  const onSubmit = async (data: TeacherInput) => {
-    try {
-      await mutateAsync(data);
-    } catch (err) {}
-  };
-
-  useEffect(() => {
-    if (!createUserAccountChecked) {
-      unregister("email");
-      unregister("password");
-    }
-  }, [unregister, createUserAccountChecked]);
-
-  useEffect(() => {
-    if (isLessonFetched && lessonData?.lessons && !isLessonListSet) {
-      setLessonList(lessonData.lessons);
-      setIsLessonListSet(true);
-    }
-  }, [isLessonFetched, lessonData, isLessonListSet]);
-
-  return (
-    <div className="flex w-3/4 flex-col items-center justify-start pt-12 lg:w-2/5">
-      <h1 className="text-2xl font-bold">Create Teacher</h1>
-      <form
-        className="mt-8 flex w-full flex-col space-y-3 px-8"
-        noValidate
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <div>
-          <Label
-            className={errors.name ? "text-destructive" : ""}
-            htmlFor="name"
-          >
-            Name
-          </Label>
-          <Input
-            className={
-              errors.name
-                ? "border-destructive focus-visible:outline-destructive"
-                : ""
-            }
-            disabled={isLoading || isSubmitting}
-            type="text"
-            id="name"
-            {...register("name")}
-          />
-        </div>
-        <div>
-          <Label
-            className={errors.surname ? "text-destructive" : ""}
-            htmlFor="surname"
-          >
-            Surname
-          </Label>
-          <Input
-            className={
-              errors.surname
-                ? "border-destructive focus-visible:outline-destructive"
-                : ""
-            }
-            disabled={isLoading || isSubmitting}
-            type="text"
-            id="surname"
-            {...register("surname")}
-          />
-        </div>
-        <div>
-          <Label className={errors.departmentId ? "text-destructive" : ""}>
-            Department
-          </Label>
-          <Controller
-            name="departmentId"
-            control={control}
-            render={({ field: { onChange, value } }) => {
-              return (
-                <Select onValueChange={onChange} value={value}>
-                  <SelectTrigger
-                    disabled={isSubmitting || isLoading}
-                    className={
-                      errors.departmentId
-                        ? "w-full border-destructive focus-visible:outline-destructive"
-                        : "w-full"
-                    }
-                  >
-                    <SelectValue placeholder="Select a department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Departments</SelectLabel>
-                      {isDepartmentFetched &&
-                        department?.departments.map((department) => (
-                          <SelectItem
-                            key={department.id}
-                            value={department.id}
-                            onSelect={() => {
-                              setValue("departmentId", department.id);
-                            }}
-                          >
-                            {department.name}
-                          </SelectItem>
-                        ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              );
-            }}
-          ></Controller>
-        </div>
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            disabled={isLoading || isSubmitting}
-            id="description"
-            {...register("description")}
-          />
-        </div>
-        <div className="flex items-center gap-4 py-4">
-          <Input
-            disabled={isLoading || isSubmitting}
-            id="createUser"
-            type="checkbox"
-            className="h-4 w-4 ring-offset-background checked:accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            {...register("createUser")}
-          />
-          <Label htmlFor="createUser">Create User Account</Label>
-        </div>
-        {createUserAccountChecked && (
-          <>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                disabled={isLoading || isSubmitting}
-                type="email"
-                id="email"
-                {...register("email", { required: false })}
-              />
-            </div>
-            <div className="pb-8">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                disabled={isLoading || isSubmitting}
-                type="password"
-                id="password"
-                {...register("password", { required: false })}
-              />
-            </div>
-          </>
-        )}
-
-        <Dialog open={isPrefDialogOpen} onOpenChange={setIsPrefDialogOpen}>
-          <DialogTrigger disabled={isSubmitting || isLoading} asChild>
-            <Button
-              disabled={isLoading || isSubmitting}
-              variant="outline"
-              className="flex items-center justify-center gap-2"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Time Preferences
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[680px]">
-            <DialogHeader>
-              <DialogTitle>Edit Time Preferences</DialogTitle>
-              <DialogDescription>
-                Set the days and class hours the teacher is available.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Hour / Day</TableHead>
-                    <TableHead>Hour 1</TableHead>
-                    <TableHead>Hour 2</TableHead>
-                    <TableHead>Hour 3</TableHead>
-                    <TableHead>Hour 4</TableHead>
-                    <TableHead>Hour 5</TableHead>
-                    <TableHead>Hour 6</TableHead>
-                    <TableHead>Hour 7</TableHead>
-                    <TableHead>Hour 8</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(
-                    (day, dayIndex) => (
-                      <TableRow key={dayIndex}>
-                        <TableCell>{day}</TableCell>
-                        {Array.from(
-                          [
-                            ClassHour.C1,
-                            ClassHour.C2,
-                            ClassHour.C3,
-                            ClassHour.C4,
-                            ClassHour.C5,
-                            ClassHour.C6,
-                            ClassHour.C7,
-                            ClassHour.C8,
-                          ],
-                          (elem, i) => (
-                            <TableCell key={i}>
-                              <Input
-                                disabled={isLoading || isSubmitting}
-                                type="checkbox"
-                                checked={timePreferences[
-                                  dayIndex
-                                ]?.classHour.includes(elem)}
-                                value={elem}
-                                className="h-4 w-4 ring-offset-background checked:accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                id={`${dayIndex}-${elem}`}
-                                onChange={(e) => {
-                                  const prev = getValues(
-                                    `timePreferences.${dayIndex}.classHour`
-                                  );
-
-                                  if (e.target.checked) {
-                                    setValue(
-                                      `timePreferences.${dayIndex}.classHour`,
-                                      [...prev, elem]
-                                    );
-
-                                    const latest = getValues(`timePreferences`);
-
-                                    if (latest)
-                                      setTimePreferences(() => {
-                                        return {
-                                          ...latest,
-                                        };
-                                      });
-                                  } else {
-                                    setValue(
-                                      `timePreferences.${dayIndex}.classHour`,
-                                      [...prev.filter((p) => p !== elem)]
-                                    );
-
-                                    const latest = getValues(`timePreferences`);
-
-                                    if (latest)
-                                      setTimePreferences(() => {
-                                        return {
-                                          ...latest,
-                                        };
-                                      });
-                                  }
-
-                                  return;
-                                }}
-                              />
-                            </TableCell>
-                          )
-                        )}
-                      </TableRow>
-                    )
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="default"
-                type="submit"
-                onClick={() => setIsPrefDialogOpen(false)}
-              >
-                Save
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        {selectedLessons.length > 0 && (
-          <div className="flex max-w-full flex-row flex-wrap rounded-md border px-2 py-2">
-            {selectedLessons.map((lesson) => (
-              <div
-                key={lesson.id}
-                className=" mr-2 flex h-min max-w-[120px] items-center justify-center rounded-md border px-2 py-1 transition-colors hover:cursor-pointer hover:bg-accent"
-                onClick={() => {
-                  setSelectedLessons(() =>
-                    selectedLessons.filter((l) => l !== lesson)
-                  );
-                  setLessonList((prev) => [...prev, lesson]);
-
-                  const prevLessonIds = getValues("lessonIds");
-                  if (prevLessonIds) {
-                    setValue(
-                      "lessonIds",
-                      prevLessonIds.filter((l) => l !== lesson.id)
-                    );
-                  }
-                }}
-              >
-                <span className="shrink-[2] pr-2 text-xs">{lesson.name}</span>
-                <Button size="sm" variant="destructive" className="h-5 w-5 p-0">
-                  <X size={18} className="h-full w-full" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-          <PopoverTrigger disabled={isSubmitting || isLoading} asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={isPopoverOpen}
-              className="w-full justify-between"
-            >
-              Select lessons
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-full p-0" align="start">
-            <Command className="w-80">
-              <CommandInput placeholder="Search lesson..." />
-              <CommandEmpty>No lesson found.</CommandEmpty>
-              <CommandGroup>
-                {lessonList.map((lesson) => (
-                  <CommandItem
-                    key={lesson.id}
-                    onSelect={() => {
-                      setSelectedLessons((prev) => [lesson, ...prev]);
-                      setLessonList(() =>
-                        lessonList.filter((l) => l !== lesson)
-                      );
-
-                      const prevLessonIds = getValues("lessonIds");
-
-                      setValue(
-                        "lessonIds",
-                        prevLessonIds
-                          ? [...prevLessonIds, lesson.id]
-                          : [lesson.id]
-                      );
-                    }}
-                  >
-                    {lesson.name}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </Command>
-          </PopoverContent>
-        </Popover>
-
-        <Button disabled={isLoading || isSubmitting} type="submit">
-          {isSubmitting || isLoading ? (
-            <>
-              <Oval
-                height={20}
-                width={20}
-                strokeWidth={4}
-                strokeWidthSecondary={3}
-                color="#5090FF"
-                secondaryColor="#FFFFFF"
-              />
-              <span>Create Teacher</span>
-            </>
-          ) : (
-            "Create Teacher"
-          )}
-        </Button>
-      </form>
-    </div>
-  );
-};
-
 type EditTeacherProps = {
   row: Row<
     Teacher & {
@@ -665,43 +783,25 @@ type EditTeacherProps = {
     }
   >;
 };
+
 const EditTeacher = ({ row }: EditTeacherProps) => {
+  const { toast } = useToast();
   const rerender = useReducer(() => ({}), {})[1];
   const [windowSize, setWindowSize] = useState([1440, 1070]);
   const [openSheet, setOpenSheet] = useState(false);
-
-  const { toast } = useToast();
-  const [isPrefDialogOpen, setIsPrefDialogOpen] = useState(false);
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [timePreferences, setTimePreferences] = useState<TimePreference[]>([
-    ...baseTimePref,
-  ]);
-  const [selectedLessons, setSelectedLessons] = useState<Lesson[]>([]);
-  const [lessonList, setLessonList] = useState<Lesson[]>([]);
-
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    setValue,
-    reset,
-    control,
-    formState: { isSubmitting },
-  } = useForm<TeacherInput>({
-    resolver: zodResolver(teacherSchema),
-  });
+  const [defaultValue, setDefaultValue] = useState<TeacherInput>();
 
   const trpcContext = api.useContext();
   const { mutateAsync, isLoading: isEditing } =
     api.teacher.updateTeacher.useMutation({
-      onSuccess: () => {
+      onSuccess: async () => {
         toast({
           title: "Teacher edited successfully",
         });
 
         // invalidate teacher table
-        void trpcContext.teacher.getTeachers.invalidate();
-        reset();
+        await trpcContext.teacher.getTeachers.invalidate();
+        // reset();
         rerender();
         // close the sheet
         void wait(1000).then(() => setOpenSheet(false));
@@ -714,10 +814,6 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
         });
       },
     });
-  const { data: lessonData, isFetched: isLessonFetched } =
-    api.lesson.getLessons.useQuery();
-  const { data: department, isFetched: isDepartmentFetched } =
-    api.department.getDepartments.useQuery();
 
   const onSubmit = async (data: TeacherInput) => {
     try {
@@ -725,79 +821,40 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
     } catch (err) {}
   };
 
-  useEffect(() => {
-    // for popover component
-    if (
-      selectedLessons.length !== 0 &&
-      isLessonFetched &&
-      lessonData?.lessons
-    ) {
-      const filteredLessons = lessonData.lessons.filter(
-        (lesson) =>
-          !selectedLessons.find((selected) => selected.id === lesson.id)
-      );
+  const setDefaultValues = useCallback(() => {
+    const {
+      id,
+      name,
+      surname,
+      description,
+      departmentId,
+      TeacherLesson,
+      TeacherWorkPreferance,
+      User,
+    } = row.original;
 
-      setLessonList(() => [...filteredLessons]);
-      // setIsLessonListSet(true);
-    } else {
+    const lessonIds = TeacherLesson.map((tl) => tl.lessonId);
+    setDefaultValue({
+      id,
+      name,
+      surname,
+      description: description ?? "",
+      departmentId: departmentId ?? undefined,
+      createUser: true,
+      email: User?.email ?? "",
+      timePreferences: TeacherWorkPreferance.map((tw) => ({
+        day: tw.workingDay,
+        classHour: tw.workingHour,
+      })),
+      lessonIds: [...lessonIds] ?? [],
+    });
+  }, [row.original]);
+
+  useEffect(() => {
+    if (openSheet) {
+      setDefaultValues();
     }
-  }, [selectedLessons, isLessonFetched, lessonData]);
-
-  useEffect(() => {
-    setValue("id", row.original.id);
-    setValue("name", row.original.name);
-    setValue("surname", row.original.surname);
-    setValue("email", row.original.User?.email ?? "");
-    setValue("departmentId", row.original.departmentId);
-    setValue("description", row.original.description ?? "");
-
-    const timePref = row.original.TeacherWorkPreferance.map(
-      (pref: TeacherWorkPreferance) => {
-        return {
-          day: pref.workingDay,
-          classHour: pref.workingHour,
-        };
-      }
-    );
-
-    if (timePref) {
-      setValue("timePreferences", timePref);
-      setTimePreferences(() => {
-        return {
-          ...timePref,
-        };
-      });
-    }
-
-    const teacherLessons = row.original.TeacherLesson.map(
-      (teacherLesson) => teacherLesson.Lesson
-    );
-
-    if (teacherLessons.length > 0) {
-      // for selected component
-      setValue(
-        "lessonIds",
-        teacherLessons.map((lesson) => lesson.id)
-      );
-      setSelectedLessons(() => [...teacherLessons]);
-    }
-  }, [row, setValue]);
-
-  useEffect(() => {
-    const handleWindowResize = () => {
-      setWindowSize([window.innerWidth, window.innerHeight]);
-    };
-
-    window.addEventListener("resize", handleWindowResize);
-
-    return () => {
-      window.removeEventListener("resize", handleWindowResize);
-    };
-  }, []);
-
-  useEffect(() => {
-    setWindowSize([window.innerWidth, window.innerHeight]);
-  }, []);
+  }, [openSheet, setDefaultValues]);
 
   return (
     <Sheet open={openSheet} onOpenChange={setOpenSheet}>
@@ -810,316 +867,22 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
           <SheetTitle>Edit Teacher {row.original.name}</SheetTitle>
         </SheetHeader>
         <div className="flex flex-col items-center justify-start pt-6">
-          <form
-            className="mt-8 flex w-full flex-col space-y-3 px-8"
-            noValidate
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <div>
-              <Label htmlFor="name">Name</Label>
-              <Input
-                disabled={isSubmitting || isEditing}
-                type="text"
-                id="name"
-                {...register("name")}
-              />
-            </div>
-            <div>
-              <Label htmlFor="surname">Surname</Label>
-              <Input
-                disabled={isSubmitting || isEditing}
-                type="text"
-                id="surname"
-                {...register("surname")}
-              />
-            </div>
-            <div>
-              <Label>Department</Label>
-              <Controller
-                name="departmentId"
-                control={control}
-                render={({ field: { onChange, value } }) => {
-                  return (
-                    <Select onValueChange={onChange} value={value}>
-                      <SelectTrigger
-                        disabled={isSubmitting || isEditing}
-                        className="w-full"
-                      >
-                        <SelectValue placeholder="Select a department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Departments</SelectLabel>
-                          {isDepartmentFetched &&
-                            department?.departments.map((department) => (
-                              <SelectItem
-                                key={department.id}
-                                value={department.id}
-                                onSelect={() => {
-                                  setValue("departmentId", department.id);
-                                }}
-                              >
-                                {department.name}
-                              </SelectItem>
-                            ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  );
-                }}
-              ></Controller>
-            </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                disabled={isSubmitting || isEditing}
-                id="description"
-                {...register("description")}
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                disabled={isSubmitting || isEditing}
-                type="email"
-                id="email"
-                {...register("email", { required: false })}
-              />
-            </div>
-            <div className="pb-8">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                disabled={isSubmitting || isEditing}
-                type="password"
-                id="password"
-                {...register("password", { required: false })}
-              />
-            </div>
-
-            <Dialog open={isPrefDialogOpen} onOpenChange={setIsPrefDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  disabled={isSubmitting || isEditing}
-                  variant="outline"
-                  className="flex items-center justify-center gap-2"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Time Preferences
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[680px]">
-                <DialogHeader>
-                  <DialogTitle>Edit Time Preferences</DialogTitle>
-                  <DialogDescription>
-                    Set the days and class hours the teacher is available.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Hour / Day</TableHead>
-                        <TableHead>Hour 1</TableHead>
-                        <TableHead>Hour 2</TableHead>
-                        <TableHead>Hour 3</TableHead>
-                        <TableHead>Hour 4</TableHead>
-                        <TableHead>Hour 5</TableHead>
-                        <TableHead>Hour 6</TableHead>
-                        <TableHead>Hour 7</TableHead>
-                        <TableHead>Hour 8</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {[
-                        "Monday",
-                        "Tuesday",
-                        "Wednesday",
-                        "Thursday",
-                        "Friday",
-                      ].map((day, dayIndex) => (
-                        <TableRow key={dayIndex}>
-                          <TableCell>{day}</TableCell>
-                          {Array.from(
-                            [
-                              ClassHour.C1,
-                              ClassHour.C2,
-                              ClassHour.C3,
-                              ClassHour.C4,
-                              ClassHour.C5,
-                              ClassHour.C6,
-                              ClassHour.C7,
-                              ClassHour.C8,
-                            ],
-                            (elem, i) => (
-                              <TableCell key={i}>
-                                <Input
-                                  disabled={isSubmitting || isEditing}
-                                  type="checkbox"
-                                  checked={timePreferences[
-                                    dayIndex
-                                  ]?.classHour.includes(elem)}
-                                  value={elem}
-                                  className="h-4 w-4 ring-offset-background checked:accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                  id={`${dayIndex}-${elem}`}
-                                  onChange={(e) => {
-                                    const prev = getValues(
-                                      `timePreferences.${dayIndex}.classHour`
-                                    );
-
-                                    if (e.target.checked) {
-                                      setValue(
-                                        `timePreferences.${dayIndex}.classHour`,
-                                        [...prev, elem]
-                                      );
-
-                                      const latest =
-                                        getValues(`timePreferences`);
-
-                                      if (latest)
-                                        setTimePreferences(() => {
-                                          return {
-                                            ...latest,
-                                          };
-                                        });
-                                    } else {
-                                      setValue(
-                                        `timePreferences.${dayIndex}.classHour`,
-                                        [...prev.filter((p) => p !== elem)]
-                                      );
-
-                                      const latest =
-                                        getValues(`timePreferences`);
-
-                                      if (latest)
-                                        setTimePreferences(() => {
-                                          return {
-                                            ...latest,
-                                          };
-                                        });
-                                    }
-
-                                    return;
-                                  }}
-                                />
-                              </TableCell>
-                            )
-                          )}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                <DialogFooter>
-                  <Button
-                    variant="default"
-                    type="submit"
-                    onClick={() => setIsPrefDialogOpen(false)}
-                  >
-                    Save
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            {selectedLessons.length > 0 && (
-              <div className="flex max-w-full flex-row flex-wrap rounded-md border px-2 py-2">
-                {selectedLessons.map((lesson) => (
-                  <div
-                    aria-disabled={isSubmitting || isEditing}
-                    key={lesson.id}
-                    className=" mr-2 flex h-min max-w-[120px] items-center justify-center rounded-md border px-2 py-1 transition-colors hover:cursor-pointer hover:bg-accent"
-                    onClick={() => {
-                      setSelectedLessons(() =>
-                        selectedLessons.filter((l) => l !== lesson)
-                      );
-                      setLessonList((prev) => [...prev, lesson]);
-
-                      const prevLessonIds = getValues("lessonIds");
-                      if (prevLessonIds) {
-                        setValue(
-                          "lessonIds",
-                          prevLessonIds.filter((l) => l !== lesson.id)
-                        );
-                      }
-                    }}
-                  >
-                    <span className="shrink-[2] pr-2 text-xs">
-                      {lesson.name}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="h-5 w-5 p-0"
-                    >
-                      <X size={18} className="h-full w-full" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-              <PopoverTrigger disabled={isSubmitting || isEditing} asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={isPopoverOpen}
-                  className="w-full justify-between"
-                >
-                  Select lessons
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
-                <Command className="w-80">
-                  <CommandInput placeholder="Search lesson..." />
-                  <CommandEmpty>No lesson found.</CommandEmpty>
-                  <CommandGroup>
-                    {lessonList.map((lesson) => (
-                      <CommandItem
-                        key={lesson.id}
-                        onSelect={() => {
-                          setSelectedLessons((prev) => [lesson, ...prev]);
-                          setLessonList(() =>
-                            lessonList.filter((l) => l !== lesson)
-                          );
-
-                          const prevLessonIds = getValues("lessonIds");
-
-                          setValue(
-                            "lessonIds",
-                            prevLessonIds
-                              ? [...prevLessonIds, lesson.id]
-                              : [lesson.id]
-                          );
-                        }}
-                      >
-                        {lesson.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
-              </PopoverContent>
-            </Popover>
-
-            <Button disabled={isSubmitting || isEditing} type="submit">
-              {isSubmitting || isEditing ? (
-                <>
-                  <Oval
-                    height={20}
-                    width={20}
-                    strokeWidth={4}
-                    strokeWidthSecondary={3}
-                    color="#5090FF"
-                    secondaryColor="#FFFFFF"
-                  />
-                  <span>Edit Teacher</span>
-                </>
-              ) : (
-                "Edit Teacher"
-              )}
-            </Button>
-          </form>
+          {defaultValue ? (
+            <TeacherForm
+              onSubmit={onSubmit}
+              isMutating={isEditing}
+              defaultValue={defaultValue}
+            />
+          ) : (
+            <Oval
+              height={80}
+              width={80}
+              strokeWidth={4}
+              strokeWidthSecondary={3}
+              color="#5090FF"
+              secondaryColor="#FFFFFF"
+            />
+          )}
         </div>
       </SheetContent>
     </Sheet>
@@ -1135,7 +898,7 @@ const Teachers: NextPage = (props) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        <div className="flex flex-col md:flex-row w-full">
+        <div className="flex w-full flex-col md:flex-row">
           <CreateTeacher />
           <TeacherTableView />
         </div>
