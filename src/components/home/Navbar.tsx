@@ -5,6 +5,7 @@ import { HiMenu } from "react-icons/hi";
 import { IoClose } from "react-icons/io5";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
+import { Oval } from "react-loader-spinner";
 
 export default function Navbar() {
   const router = useRouter();
@@ -13,10 +14,10 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`relative z-10 h-20 w-full shadow-xl ${
+      className={`z-10 h-20 w-full bg-background shadow-xl ${
         isOpen
-          ? "before:fixed before:inset-0 before:bg-gradient-to-b before:from-transparent before:to-[rgba(0,0,0,0.5)] before:content-['']"
-          : ""
+          ? "relative before:fixed before:inset-0 before:bg-gradient-to-b before:from-transparent before:to-[rgba(0,0,0,0.5)] before:content-['']"
+          : "sticky top-0"
       }`}
     >
       <div className="container mx-auto flex h-full w-full items-center justify-between px-4 py-4 lg:px-0">
@@ -121,6 +122,17 @@ export default function Navbar() {
                   </Link>
                 </li>
               </>
+            ) : status === "loading" ? (
+              <li className="text-primary-foreground">
+                <Oval
+                  height={40}
+                  width={40}
+                  strokeWidth={5}
+                  strokeWidthSecondary={5}
+                  color="#0F1729"
+                  secondaryColor="#FFFFFF"
+                />
+              </li>
             ) : (
               <>
                 <li>
