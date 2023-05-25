@@ -878,7 +878,10 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
         <Button variant="default">Edit</Button>
       </SheetTrigger>
 
-      <SheetContent size={windowSize.at(0)! <= 1024 ? "full" : "default"}>
+      <SheetContent
+        className="overflow-y-auto"
+        size={windowSize.at(0)! <= 1024 ? "full" : "default"}
+      >
         <SheetHeader>
           <SheetTitle>Edit Teacher {row.original.name}</SheetTitle>
         </SheetHeader>
