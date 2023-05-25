@@ -202,8 +202,8 @@ const TeacherForm = ({
     await onSubmit(values);
     form.reset();
     setSelectedLessons([]);
-    setIsLessonSet(false);
     await refetchLesson();
+    setIsLessonSet(false);
   };
 
   useEffect(() => {
@@ -855,6 +855,22 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
       setDefaultValues();
     }
   }, [openSheet, setDefaultValues]);
+
+  useEffect(() => {
+    const handleWindowResize = () => {
+      setWindowSize([window.innerWidth, window.innerHeight]);
+    };
+
+    window.addEventListener("resize", handleWindowResize);
+
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    setWindowSize([window.innerWidth, window.innerHeight]);
+  }, []);
 
   return (
     <Sheet open={openSheet} onOpenChange={setOpenSheet}>
