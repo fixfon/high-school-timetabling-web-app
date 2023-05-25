@@ -118,6 +118,7 @@ const ClassroomForm = ({
   const totalWeeklyHour = form.watch("lessons", []).reduce((acc, curr) => {
     return acc + curr.weeklyHour;
   }, 0);
+  const branchWatch = form.watch("branch");
 
   const {
     fields: lessonFields,
@@ -156,6 +157,10 @@ const ClassroomForm = ({
     await refetchLesson();
     setIsLessonSet(false);
   };
+
+  useEffect(() => {
+    console.log(branchWatch);
+  }, [branchWatch]);
 
   useEffect(() => {
     if (isLessonFetched && !isLessonSet) {
@@ -285,7 +290,7 @@ const ClassroomForm = ({
               <div className="flex items-center justify-center">
                 <Select
                   onValueChange={field.onChange}
-                  value={field.value ?? undefined}
+                  defaultValue={field.value ?? "none"}
                 >
                   <FormControl>
                     <SelectTrigger
@@ -294,9 +299,11 @@ const ClassroomForm = ({
                     >
                       <SelectValue
                         placeholder="Select a branch"
-                        aria-label={field.value ?? undefined}
+                        aria-label={field.value ?? "none"}
                       >
-                        {field.value ?? "Select a branch"}
+                        {field.value === "none" || !field.value
+                          ? "Select a branch"
+                          : field.value}
                       </SelectValue>
                     </SelectTrigger>
                   </FormControl>
@@ -311,9 +318,10 @@ const ClassroomForm = ({
                   </SelectContent>
                 </Select>
                 <Button
+                  type="button"
                   disabled={form.formState.isSubmitting || !!isMutating}
                   onClick={() => {
-                    field.onChange(undefined);
+                    form.setValue("branch", "none");
                   }}
                   variant="link"
                 >
@@ -342,6 +350,7 @@ const ClassroomForm = ({
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
+                        type="button"
                         disabled={form.formState.isSubmitting || !!isMutating}
                         variant="outline"
                         role="combobox"
@@ -383,7 +392,9 @@ const ClassroomForm = ({
                             <CommandItem
                               key={teacher.id}
                               onSelect={() => {
-                                form.setValue("advisorTeacherId", teacher.id);
+                                field.onChange(
+                                  field.value === teacher.id ? null : teacher.id
+                                );
                                 setIsTeacherPopoverOpen(false);
                               }}
                             >
@@ -404,9 +415,10 @@ const ClassroomForm = ({
                   </PopoverContent>
                 </Popover>
                 <Button
+                  type="button"
                   disabled={form.formState.isSubmitting || !!isMutating}
                   onClick={() => {
-                    field.onChange(undefined);
+                    form.setValue("advisorTeacherId", null);
                   }}
                   variant="link"
                 >
@@ -433,6 +445,7 @@ const ClassroomForm = ({
               >
                 <DialogTrigger className="w-full" asChild>
                   <Button
+                    type="button"
                     disabled={form.formState.isSubmitting || !!isMutating}
                     variant="outline"
                     className="flex items-center justify-center gap-2"
@@ -467,6 +480,7 @@ const ClassroomForm = ({
                             <TableRow key={lessonItem.id}>
                               <TableCell>
                                 <Button
+                                  type="button"
                                   disabled={
                                     form.formState.isSubmitting || !!isMutating
                                   }
@@ -517,6 +531,7 @@ const ClassroomForm = ({
                                         <PopoverTrigger asChild>
                                           <FormControl>
                                             <Button
+                                              type="button"
                                               disabled={
                                                 form.formState.isSubmitting ||
                                                 !!isMutating
@@ -713,6 +728,7 @@ const ClassroomForm = ({
                   </Table>
                   <div className="flex items-center justify-between">
                     <Button
+                      type="button"
                       disabled={form.formState.isSubmitting || !!isMutating}
                       className="w-1/4"
                       onClick={appendLessonFunc}
@@ -728,6 +744,7 @@ const ClassroomForm = ({
                   </div>
                   <DialogFooter>
                     <Button
+                      type="submit"
                       variant="default"
                       onClick={() => setIsLessonDialogOpen(false)}
                     >

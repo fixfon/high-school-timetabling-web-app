@@ -256,7 +256,7 @@ export const classroomRouter = createTRPCRouter({
         // check if the class level is L11 or L12, then branch must be selected
         if (
           (classLevel === ClassLevel.L11 || classLevel === ClassLevel.L12) &&
-          (!branch || branch === "")
+          (!branch || branch === "" || branch === "none")
         ) {
           throw new TRPCError({
             code: "BAD_REQUEST",
