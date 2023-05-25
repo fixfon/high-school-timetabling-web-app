@@ -49,6 +49,15 @@ model Classroom {
     @@index([organizationId])
 }
 
+model Department {
+    id        String    @id @default(cuid())
+    name      String
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    Teacher   Teacher[]
+    Lesson    Lesson[]
+}
+
 model Lesson {
     id              String            @id @default(cuid())
     code            String
@@ -60,6 +69,9 @@ model Lesson {
     TeacherLesson   TeacherLesson[]
     ClassroomLesson ClassroomLesson[]
     Class           Class[]
+
+    department   Department @relation(fields: [departmentId], references: [id])
+    departmentId String
 }
 
 model ClassroomLesson {
@@ -121,7 +133,6 @@ model Teacher {
     name                  String
     surname               String
     description           String?
-    department            String?
     createdAt             DateTime                @default(now())
     updatedAt             DateTime                @updatedAt
     TeacherWorkPreferance TeacherWorkPreferance[]
@@ -129,10 +140,12 @@ model Teacher {
     Class                 Class[]
     TeacherLesson         TeacherLesson[]
 
+    Department     Department   @relation(fields: [departmentId], references: [id])
+    departmentId   String
     Organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
     organizationId String
 
-    User   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    User   User?   @relation(fields: [userId], references: [id])
     userId String? @unique // * This is nullable because a teacher can be added by admin without a user account
 
     @@unique([userId, organizationId])

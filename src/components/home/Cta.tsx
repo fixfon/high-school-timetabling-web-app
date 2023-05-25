@@ -16,7 +16,7 @@ export default function CTA() {
       </h3>
       <Image
         className="mb-12"
-        src="/placeholder4.png"
+        src="/logo-dark.svg"
         alt="Logo Placeholder"
         width={433}
         height={105}

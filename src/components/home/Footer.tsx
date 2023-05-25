@@ -70,12 +70,14 @@ export default function Footer() {
           </Link>
         </div>
         <div className="flex items-center justify-center lg:w-1/3">
-          <Image
-            src="/placeholder5.png"
-            alt="Placeholder 5"
-            width={150}
-            height={150}
-          />
+          <Link href="/" className="transition-opacity hover:opacity-80">
+            <Image
+              src="/icon-light.svg"
+              alt="TimetablePRO Icon Light"
+              width={150}
+              height={150}
+            />
+          </Link>
         </div>
         <div className="flex flex-col items-center justify-center gap-4 lg:w-1/3">
           <input

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { HiMenu } from "react-icons/hi";
 import { IoClose } from "react-icons/io5";
 import { signOut, useSession } from "next-auth/react";
+import Image from "next/image";
 
 export default function Navbar() {
   const router = useRouter();
@@ -20,7 +21,15 @@ export default function Navbar() {
     >
       <div className="container mx-auto flex h-full w-full items-center justify-between px-4 py-4 lg:px-0">
         <div>
-          <h1 className="text-4xl">TimetablePRO</h1>
+          <Link href="/">
+            <Image
+              src="/logo-light.svg"
+              height={80}
+              width={320}
+              alt="TimetablePRO Logo Light"
+              className="w-60 md:w-80"
+            />
+          </Link>
         </div>
         {isOpen ? (
           <button
