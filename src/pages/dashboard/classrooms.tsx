@@ -10,6 +10,7 @@ import {
   type Classroom,
   type Teacher,
   type ClassroomLesson,
+  type LessonType,
 } from "@prisma/client";
 import { Button } from "~/components/ui/button";
 import {
@@ -82,6 +83,13 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 
+const LessonTypeMap: Record<LessonType | "None", string> = {
+  COMPULSORY: "Compulsory",
+  DEPARTMENTAL_COMPULSORY: "Departmental Compulsory",
+  ELECTIVE: "Elective",
+  None: "None",
+};
+
 type ClassroomFormProps = {
   defaultValue?: ClassroomInput;
   onSubmit: (data: ClassroomInput) => Promise<void>;
@@ -118,7 +126,6 @@ const ClassroomForm = ({
   const totalWeeklyHour = form.watch("lessons", []).reduce((acc, curr) => {
     return acc + curr.weeklyHour;
   }, 0);
-  const branchWatch = form.watch("branch");
 
   const {
     fields: lessonFields,
@@ -678,9 +685,12 @@ const ClassroomForm = ({
                               <TableCell className="w-1/3 text-xs">
                                 <span>
                                   {
-                                    lesson?.lessons.find(
-                                      (l) => l.id === masterField.value.lessonId
-                                    )?.type
+                                    LessonTypeMap[
+                                      lesson?.lessons.find(
+                                        (l) =>
+                                          l.id === masterField.value.lessonId
+                                      )?.type ?? "None"
+                                    ]
                                   }
                                 </span>
                               </TableCell>
@@ -783,7 +793,8 @@ const CreateClassroom = () => {
   const { mutateAsync, isLoading } = api.classroom.createClassroom.useMutation({
     onSuccess: () => {
       toast({
-        title: "Classroom created successfully",
+        title: "Create",
+        description: "Classroom created successfully",
       });
       // invalidate classroom table
       void trpcContext.classroom.getClassrooms.invalidate();
@@ -798,6 +809,10 @@ const CreateClassroom = () => {
   });
 
   const onSubmit = async (data: ClassroomInput) => {
+    toast({
+      title: "Create",
+      description: "Creating the classroom...",
+    });
     try {
       await mutateAsync(data);
     } catch (err) {}
@@ -885,32 +900,48 @@ const classroomColumns: ColumnDef<
     header: "",
     cell: ({ row }) => {
       const { id } = row.original;
-      const trpcContext = api.useContext();
-
-      const { mutateAsync, isLoading } =
-        api.classroom.deleteClassroom.useMutation({
-          onSuccess: async () => {
-            // validate data
-            await trpcContext.classroom.getClassrooms.invalidate();
-          },
-        });
-
-      const handleDelete = async () => {
-        await mutateAsync({ classroomId: id });
-      };
-
-      return (
-        <Button
-          disabled={isLoading}
-          variant="destructive"
-          onClick={handleDelete}
-        >
-          <Trash2 className="h-5 w-5" />
-        </Button>
-      );
+      return <DeleteClassroomButton id={id} />;
     },
   },
 ];
+
+const DeleteClassroomButton = ({ id }: { id: string }) => {
+  const { toast } = useToast();
+  const trpcContext = api.useContext();
+
+  const { mutateAsync, isLoading } = api.classroom.deleteClassroom.useMutation({
+    onSuccess: async () => {
+      toast({
+        title: "Delete",
+        description: "Classroom deleted successfully",
+      });
+
+      // validate data
+      await trpcContext.classroom.getClassrooms.invalidate();
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Delete",
+        description: "Error deleting classroom",
+      });
+    },
+  });
+
+  const handleDelete = async () => {
+    toast({
+      title: "Delete",
+      description: "Deleting classroom...",
+    });
+    await mutateAsync({ classroomId: id });
+  };
+
+  return (
+    <Button disabled={isLoading} variant="destructive" onClick={handleDelete}>
+      <Trash2 className="h-5 w-5" />
+    </Button>
+  );
+};
 
 const ClassroomTableView = () => {
   const { data: classrooms } = api.classroom.getClassrooms.useQuery();
@@ -954,7 +985,8 @@ const EditClassroom = ({ row }: EditClassroomProps) => {
     api.classroom.updateClassroom.useMutation({
       onSuccess: async () => {
         toast({
-          title: "Classroom edited successfully",
+          title: "Edit",
+          description: "Classroom edited successfully",
         });
 
         // invalidate teacher table
@@ -973,6 +1005,10 @@ const EditClassroom = ({ row }: EditClassroomProps) => {
     });
 
   const onSubmit = async (data: ClassroomInput) => {
+    toast({
+      title: "Edit",
+      description: "Editing classroom...",
+    });
     try {
       await mutateAsync(data);
     } catch (err) {}
@@ -1060,7 +1096,7 @@ const EditClassroom = ({ row }: EditClassroomProps) => {
   );
 };
 
-const Classrooms: NextPage = (props) => {
+const Classrooms: NextPage = () => {
   return (
     <>
       <Head>

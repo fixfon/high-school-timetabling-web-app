@@ -666,7 +666,8 @@ const CreateTeacher = () => {
     api.teacher.createTeacher.useMutation({
       onSuccess: async () => {
         toast({
-          title: "Teacher created successfully",
+          title: "Create",
+          description: "Teacher created successfully",
         });
         // invalidate teacher table
         await trpcContext.teacher.getTeachers.invalidate();
@@ -681,6 +682,11 @@ const CreateTeacher = () => {
     });
 
   const onSubmit = async (data: TeacherInput) => {
+    toast({
+      title: "Create",
+      description: "Creating teacher...",
+    });
+
     try {
       await mutateAsync(data);
     } catch (err) {}
@@ -742,31 +748,42 @@ const teacherColumns: ColumnDef<
     header: "",
     cell: ({ row }) => {
       const { id } = row.original;
-      const trpcContext = api.useContext();
-
-      const { mutateAsync, isLoading } = api.teacher.deleteTeacher.useMutation({
-        onSuccess: async () => {
-          // validate data
-          await trpcContext.teacher.getTeachers.invalidate();
-        },
-      });
-
-      const handleDelete = async () => {
-        await mutateAsync({ teacherId: id });
-      };
-
-      return (
-        <Button
-          disabled={isLoading}
-          variant="destructive"
-          onClick={handleDelete}
-        >
-          <Trash2 className="h-5 w-5" />
-        </Button>
-      );
+      return <TeacherDeleteButton id={id} />;
     },
   },
 ];
+
+const TeacherDeleteButton = ({ id }: { id: string }) => {
+  const { toast } = useToast();
+  const trpcContext = api.useContext();
+
+  const { mutateAsync, isLoading } = api.teacher.deleteTeacher.useMutation({
+    onSuccess: async () => {
+      toast({
+        title: "Delete",
+        description: "Teacher deleted successfully",
+      });
+
+      // validate data
+      await trpcContext.teacher.getTeachers.invalidate();
+    },
+  });
+
+  const handleDelete = async () => {
+    toast({
+      title: "Delete",
+      description: "Deleting teacher...",
+    });
+
+    await mutateAsync({ teacherId: id });
+  };
+
+  return (
+    <Button disabled={isLoading} variant="destructive" onClick={handleDelete}>
+      <Trash2 className="h-5 w-5" />
+    </Button>
+  );
+};
 
 const TeacherTableView = () => {
   const { data: teachers } = api.teacher.getTeachers.useQuery();
@@ -802,7 +819,8 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
     api.teacher.updateTeacher.useMutation({
       onSuccess: async () => {
         toast({
-          title: "Teacher edited successfully",
+          title: "Edit",
+          description: "Teacher edited successfully",
         });
 
         // invalidate teacher table
@@ -822,6 +840,11 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
     });
 
   const onSubmit = async (data: TeacherInput) => {
+    toast({
+      title: "Edit",
+      description: "Editing teacher...",
+    });
+
     try {
       await mutateAsync(data);
     } catch (err) {}
@@ -914,7 +937,7 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
   );
 };
 
-const Teachers: NextPage = (props) => {
+const Teachers: NextPage = () => {
   return (
     <>
       <Head>
