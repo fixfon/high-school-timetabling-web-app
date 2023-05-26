@@ -277,17 +277,28 @@ export const classroomRouter = createTRPCRouter({
       }
 
       if (branch !== foundClassroom.branch) {
-        await ctx.prisma.classroom.update({
-          where: {
-            id,
-          },
-          data: {
-            branch:
-              classLevel === ClassLevel.L11 || classLevel === ClassLevel.L12
-                ? (branch as Branch) || undefined
-                : undefined,
-          },
-        });
+        if (branch && branch !== "" && branch !== "none") {
+          await ctx.prisma.classroom.update({
+            where: {
+              id,
+            },
+            data: {
+              branch:
+                classLevel === ClassLevel.L11 || classLevel === ClassLevel.L12
+                  ? (branch as Branch) || null
+                  : null,
+            },
+          });
+        } else {
+          await ctx.prisma.classroom.update({
+            where: {
+              id,
+            },
+            data: {
+              branch: null,
+            },
+          });
+        }
       }
 
       if (advisorTeacherId !== foundClassroom.advisorTeacherId) {
@@ -329,7 +340,9 @@ export const classroomRouter = createTRPCRouter({
               id,
             },
             data: {
-              advisorTeacherId,
+              advisorTeacherId: {
+                set: advisorTeacherId || null,
+              },
             },
           });
         } else {
@@ -338,7 +351,9 @@ export const classroomRouter = createTRPCRouter({
               id,
             },
             data: {
-              advisorTeacherId: undefined,
+              advisorTeacherId: {
+                set: null,
+              },
             },
           });
         }
