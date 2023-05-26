@@ -97,12 +97,9 @@ const Register: NextPage = (props) => {
         )}
       >
         <div className="flex min-h-full w-full flex-col px-4 py-12 lg:w-3/5 lg:px-8">
-          <Image
-            src="/placeholder4.png"
-            alt="Logo Placeholder"
-            width={300}
-            height={70}
-          />
+          <Link href="/" className="transition-opacity hover:opacity-70">
+            <Image src="/logo-light.svg" alt="Logo" width={300} height={70} />
+          </Link>
           <div className="my-auto flex h-full flex-col self-center xl:max-w-[80%]">
             <div className="mt-4 pb-4 md:mt-0 md:pb-12">
               <h1 className="text-5xl font-extrabold text-primary">Register</h1>

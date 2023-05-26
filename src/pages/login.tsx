@@ -84,13 +84,16 @@ const Login: NextPage = (props) => {
         )}
       >
         <div className="flex min-h-full w-full flex-col px-4 py-12 lg:w-3/5 lg:px-8">
-          <Image
-            className="mt-8 md:mt-0"
-            src="/placeholder4.png"
-            alt="Logo Placeholder"
-            width={300}
-            height={70}
-          />
+          <Link href="/" className="hover:opacity-70 transition-opacity">
+            <Image
+              className="mt-8 md:mt-0"
+              src="/logo-light.svg"
+              alt="Logo"
+              width={300}
+              height={70}
+            />
+          </Link>
+
           <div className="my-auto flex h-full max-w-[80%] flex-col self-center">
             <div className="mt-4 pb-12 md:mt-0 md:pb-32">
               <h1 className="text-5xl font-extrabold text-primary">Login</h1>
