@@ -278,7 +278,13 @@ const TeacherForm = ({
                   <SelectTrigger
                     disabled={form.formState.isSubmitting || !!isMutating}
                   >
-                    <SelectValue placeholder="Select a department" />
+                    <SelectValue placeholder="Select a department">
+                      {isDepartmentFetched && field.value
+                        ? department?.departments.find(
+                            (department) => department.id === field.value
+                          )?.name
+                        : "Select a department"}
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

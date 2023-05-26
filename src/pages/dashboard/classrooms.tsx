@@ -111,7 +111,7 @@ const ClassroomForm = ({
       code: defaultValue?.code ?? undefined,
       branch: defaultValue?.branch ?? undefined,
       advisorTeacherId: defaultValue?.advisorTeacherId ?? undefined,
-      lessons: defaultValue?.lessons ?? [],
+      lessons: defaultValue?.lessons ?? undefined,
     },
   });
 
@@ -150,22 +150,16 @@ const ClassroomForm = ({
   } = api.lesson.getLessons.useQuery();
 
   const formSubmit = async (data: ClassroomInput) => {
-    // console.log(data);
     await onSubmit(data);
-    form.reset();
     setSelectedLessons([]);
     await refetchLesson();
+    form.reset();
     setIsLessonSet(false);
   };
 
   useEffect(() => {
-    console.log(branchWatch);
-  }, [branchWatch]);
-
-  useEffect(() => {
     if (isLessonFetched && !isLessonSet) {
       if (defaultValue?.lessons && defaultValue.lessons.length > 0) {
-        console.log(defaultValue?.lessons);
         const selected = lesson?.lessons.filter((lesson) =>
           defaultValue.lessons.some((l) => l.lessonId === lesson.id)
         );
@@ -235,10 +229,9 @@ const ClassroomForm = ({
                     className="w-full"
                     disabled={form.formState.isSubmitting || !!isMutating}
                   >
-                    <SelectValue
-                      aria-label={field.value}
-                      placeholder="Select a class code"
-                    />
+                    <SelectValue aria-label={field.value}>
+                      {field.value ?? "Select a class code"}
+                    </SelectValue>
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
