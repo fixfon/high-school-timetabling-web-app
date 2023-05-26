@@ -28,6 +28,9 @@ export const classroomRouter = createTRPCRouter({
         },
         Teacher: true,
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     return {

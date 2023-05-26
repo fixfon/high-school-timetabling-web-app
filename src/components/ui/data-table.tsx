@@ -1,4 +1,3 @@
-// TODO: Add search
 import {
   type ColumnDef,
   flexRender,
