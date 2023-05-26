@@ -944,13 +944,15 @@ const DeleteClassroomButton = ({ id }: { id: string }) => {
 };
 
 const ClassroomTableView = () => {
-  const { data: classrooms } = api.classroom.getClassrooms.useQuery();
+  const { data: classrooms, isLoading } =
+    api.classroom.getClassrooms.useQuery();
 
   return (
     <div className="w-full pt-12 lg:w-3/5">
       <DataTable
         columns={classroomColumns}
         data={classrooms?.classrooms ?? []}
+        isLoading={isLoading}
       />
     </div>
   );
@@ -1096,7 +1098,7 @@ const EditClassroom = ({ row }: EditClassroomProps) => {
   );
 };
 
-const Classrooms: NextPage = () => {
+const Classrooms: NextPage = (props) => {
   return (
     <>
       <Head>

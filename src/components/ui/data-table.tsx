@@ -1,7 +1,5 @@
 // TODO: Add pagination
 // TODO: Add search
-// TODO: Add loading
-
 import {
   type ColumnDef,
   flexRender,
@@ -17,15 +15,18 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { Skeleton } from "./skeleton";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  isLoading?: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  isLoading,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -73,9 +74,22 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </TableCell>
+              {isLoading ? (
+                columns.map((_, index) => {
+                  return (
+                    <TableCell key={index}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  );
+                })
+              ) : (
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No results.
+                </TableCell>
+              )}
             </TableRow>
           )}
         </TableBody>
