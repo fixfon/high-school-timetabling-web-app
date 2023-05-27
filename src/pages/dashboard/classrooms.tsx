@@ -119,14 +119,24 @@ const ClassroomForm = ({
       code: defaultValue?.code ?? undefined,
       branch: defaultValue?.branch ?? undefined,
       advisorTeacherId: defaultValue?.advisorTeacherId ?? undefined,
-      lessons: defaultValue?.lessons ?? undefined,
+      lessons: defaultValue?.lessons ?? [
+        {
+          lessonId: "",
+          lessonName: "",
+          weeklyHour: 0,
+        },
+      ],
     },
   });
 
   const totalWeeklyHour = form.watch("lessons", []).reduce((acc, curr) => {
     return acc + curr.weeklyHour;
   }, 0);
+  const lessonWatch = form.watch("lessons");
 
+  useEffect(() => {
+    console.log("lessonWatch", lessonWatch);
+  }, [lessonWatch]);
   const {
     fields: lessonFields,
     append: appendLesson,
