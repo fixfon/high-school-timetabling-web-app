@@ -5,12 +5,12 @@ import { useCallback, useEffect, useReducer, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import Layout from "~/components/dashboard/Layout";
 import { api } from "~/utils/api";
+import { LessonTypeMap, ClassLevelMap } from "~/utils/enum-mapper";
 import {
   type Lesson,
   type Classroom,
   type Teacher,
   type ClassroomLesson,
-  type LessonType,
 } from "@prisma/client";
 import { Button } from "~/components/ui/button";
 import {
@@ -82,13 +82,6 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-
-const LessonTypeMap: Record<LessonType | "None", string> = {
-  COMPULSORY: "Compulsory",
-  DEPARTMENTAL_COMPULSORY: "Departmental Compulsory",
-  ELECTIVE: "Elective",
-  None: "None",
-};
 
 type ClassroomFormProps = {
   defaultValue?: ClassroomInput;
@@ -967,13 +960,6 @@ const ClassroomTableView = () => {
       />
     </div>
   );
-};
-
-const ClassLevelMap = {
-  L9: "9. Grade",
-  L10: "10. Grade",
-  L11: "11. Grade",
-  L12: "12. Grade",
 };
 
 type EditClassroomProps = {
