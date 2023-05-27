@@ -159,8 +159,8 @@ const ClassroomForm = ({
   const formSubmit = async (data: ClassroomInput) => {
     await onSubmit(data);
     setSelectedLessons([]);
-    await refetchLesson();
     form.reset();
+    await refetchLesson();
     setIsLessonSet(false);
   };
 
@@ -491,7 +491,8 @@ const ClassroomForm = ({
                                     // add removed lesson to available lessons
 
                                     const removedLesson = selectedLessons.find(
-                                      (l) => l.id === masterField.value.lessonId
+                                      (l) =>
+                                        l.id === masterField?.value?.lessonId
                                     );
 
                                     if (removedLesson) {
@@ -576,8 +577,8 @@ const ClassroomForm = ({
                                                           lesson.name
                                                         );
                                                         if (
-                                                          masterField.value
-                                                            .lessonId
+                                                          masterField?.value
+                                                            ?.lessonId
                                                         ) {
                                                           // add previous lesson to availableLessons
                                                           // deduct this selected from availableLessons
@@ -688,7 +689,7 @@ const ClassroomForm = ({
                                     LessonTypeMap[
                                       lesson?.lessons.find(
                                         (l) =>
-                                          l.id === masterField.value.lessonId
+                                          l.id === masterField?.value?.lessonId
                                       )?.type ?? "None"
                                     ]
                                   }
