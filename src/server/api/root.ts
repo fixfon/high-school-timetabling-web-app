@@ -5,6 +5,7 @@ import { classroomRouter } from "./routers/classroom";
 import { lessonRouter } from "./routers/lesson";
 import { departmentRouter } from "./routers/department";
 import { timetableRouter } from "./routers/timetable";
+import { organizationRouter } from "./routers/organization";
 
 export const appRouter = createTRPCRouter({
   teacher: teacherRouter,
@@ -12,6 +13,7 @@ export const appRouter = createTRPCRouter({
   lesson: lessonRouter,
   timetable: timetableRouter,
   department: departmentRouter,
+  organization: organizationRouter,
   register: registerRouter,
 });
 
