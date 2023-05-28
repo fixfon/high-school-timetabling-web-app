@@ -34,13 +34,11 @@ const Register: NextPage = (props) => {
             email: res.email,
             password: res.password,
           };
-          const signedIn = await signIn("credentials", {
-            callbackUrl: "/dashboard",
+
+          await signIn("credentials", {
             redirect: false,
             ...creds,
           });
-
-          if (!signedIn?.ok) router.push("/login");
         }
       },
       onError: (err) => {
@@ -75,7 +73,8 @@ const Register: NextPage = (props) => {
 
   useEffect(() => {
     if (session) {
-      router.push("/dashboard");
+      if (session.user.role === "SUPERADMIN") router.push("/admin");
+      else if (session.user.role === "ORGMEMBER") router.push("/dashboard");
     }
   }, [session, router]);
 

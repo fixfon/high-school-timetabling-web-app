@@ -28,31 +28,23 @@ const Login: NextPage = (props) => {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = useCallback(
-    async (data: LoginInput) => {
-      try {
-        const res = await signIn("credentials", {
-          callbackUrl: "/dashboard",
-          redirect: false,
-          ...data,
-        });
+  const onSubmit = useCallback(async (data: LoginInput) => {
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        ...data,
+      });
 
-        if (!res?.ok) {
-          if (res?.error === "User not found") setError("User not found");
-          else if (res?.error === "Invalid password")
-            setError("Invalid password");
-          else setError("Something went wrong");
-        }
-
-        if (res?.ok && res?.url) {
-          router.push(res.url);
-        }
-      } catch (e) {
-        setError("Something went wrong");
+      if (!res?.ok) {
+        if (res?.error === "User not found") setError("User not found");
+        else if (res?.error === "Invalid password")
+          setError("Invalid password");
+        else setError("Something went wrong");
       }
-    },
-    [router]
-  );
+    } catch (e) {
+      setError("Something went wrong");
+    }
+  }, []);
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
@@ -84,7 +76,7 @@ const Login: NextPage = (props) => {
         )}
       >
         <div className="flex min-h-full w-full flex-col px-4 py-12 lg:w-3/5 lg:px-8">
-          <Link href="/" className="hover:opacity-70 transition-opacity">
+          <Link href="/" className="transition-opacity hover:opacity-70">
             <Image
               className="mt-8 md:mt-0"
               src="/logo-light.svg"
