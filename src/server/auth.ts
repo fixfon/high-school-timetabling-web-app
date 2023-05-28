@@ -1,9 +1,5 @@
 import { type GetServerSidePropsContext } from "next";
-import {
-  getServerSession,
-  type NextAuthOptions,
-  type DefaultSession,
-} from "next-auth";
+import { getServerSession, type NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "~/server/db";
 import { env } from "~/env.mjs";
@@ -45,6 +41,13 @@ declare module "next-auth/jwt" {
 
 export const authOptions: NextAuthOptions = {
   callbacks: {
+    redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -75,7 +78,7 @@ export const authOptions: NextAuthOptions = {
   secret: env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/login",
-    newUser: "/dashboard/setup",
+    newUser: "/dashboard",
   },
   providers: [
     Credentials({

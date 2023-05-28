@@ -111,7 +111,13 @@ export default function Navbar() {
                   </button>
                 </li>
                 <li>
-                  <Link href="/dashboard">
+                  <Link
+                    href={
+                      session.user.role === "SUPERADMIN"
+                        ? "/admin"
+                        : "/dashboard"
+                    }
+                  >
                     <button
                       type="button"
                       className="rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/80
