@@ -96,7 +96,7 @@ const Register: NextPage = (props) => {
         )}
       >
         <div className="flex min-h-full w-full flex-col px-4 py-12 lg:w-3/5 lg:px-8">
-          <Link href="/" className="transition-opacity hover:opacity-70">
+          <Link href="/" className="max-w-fit transition-opacity hover:opacity-70">
             <Image src="/logo-light.svg" alt="Logo" width={300} height={70} />
           </Link>
           <div className="my-auto flex h-full flex-col self-center xl:max-w-[80%]">

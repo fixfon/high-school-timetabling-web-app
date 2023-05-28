@@ -28,7 +28,7 @@ export default function Navbar() {
               height={80}
               width={320}
               alt="TimetablePRO Logo Light"
-              className="w-60 md:w-80"
+              className="w-60 md:w-[264px]"
             />
           </Link>
         </div>

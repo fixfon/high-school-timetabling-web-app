@@ -76,7 +76,7 @@ const Login: NextPage = (props) => {
         )}
       >
         <div className="flex min-h-full w-full flex-col px-4 py-12 lg:w-3/5 lg:px-8">
-          <Link href="/" className="transition-opacity hover:opacity-70">
+          <Link href="/" className="max-w-fit transition-opacity hover:opacity-70">
             <Image
               className="mt-8 md:mt-0"
               src="/logo-light.svg"
