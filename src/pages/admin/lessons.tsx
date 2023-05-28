@@ -247,15 +247,15 @@ const LessonForm = ({ onSubmit, isMutating }: LessonFormProps) => {
                         ? departmentData?.departments.find(
                             (department) => department.id === field.value
                           )?.name
-                        : "Select a teacher"}
+                        : "Select a department"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-0" align="start">
                   <Command className="w-80">
-                    <CommandInput placeholder="Search teacher..." />
-                    <CommandEmpty>No teacher found.</CommandEmpty>
+                    <CommandInput placeholder="Search department..." />
+                    <CommandEmpty>No department found.</CommandEmpty>
                     <CommandGroup>
                       {isDepartmentLoading ? (
                         <Oval
@@ -310,7 +310,7 @@ const LessonForm = ({ onSubmit, isMutating }: LessonFormProps) => {
               <FormControl>
                 <Textarea
                   disabled={form.formState.isSubmitting || !!isMutating}
-                  placeholder="Description about the teacher"
+                  placeholder="Description about the department"
                   className="resize-none"
                   {...field}
                 />
