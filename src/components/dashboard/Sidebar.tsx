@@ -14,6 +14,7 @@ import {
   CalendarClock,
   School,
   ScrollText,
+  Group,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
@@ -32,7 +33,21 @@ export default function Sidebar() {
           <div
             className={cn(
               "w-3/4 cursor-pointer rounded-lg py-2 hover:bg-accent lg:px-4",
-              router.pathname === "/dashboard" && "bg-accent"
+              router.pathname === "/admin" && "bg-accent"
+            )}
+          >
+            <Link
+              className="lg:flex lg:items-center lg:gap-1 xl:gap-4"
+              href="/admin"
+            >
+              <PanelTop className="mx-auto lg:m-0" size={24} />
+              <span className="hidden lg:block">Dashboard</span>
+            </Link>
+          </div>
+          <div
+            className={cn(
+              "w-3/4 cursor-pointer rounded-lg py-2 hover:bg-accent lg:px-4",
+              router.pathname === "/admin/lessons" && "bg-accent"
             )}
           >
             <Link
@@ -43,7 +58,26 @@ export default function Sidebar() {
               <span className="hidden lg:block">Lessons</span>
             </Link>
           </div>
-          <div className="w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent">
+          <div
+            className={cn(
+              "w-3/4 cursor-pointer rounded-lg py-2 hover:bg-accent lg:px-4",
+              router.pathname === "/admin/departments" && "bg-accent"
+            )}
+          >
+            <Link
+              className="lg:flex lg:items-center lg:gap-1 xl:gap-4"
+              href="/admin/departments"
+            >
+              <Group size={24} className="mx-auto lg:m-0" />
+              <span className="hidden lg:block">Departments</span>
+            </Link>
+          </div>
+          <div
+            className={cn(
+              "w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent",
+              router.pathname === "/admin/organizations" && "bg-accent"
+            )}
+          >
             <Link
               className="lg:flex lg:items-center lg:gap-1 xl:gap-4"
               href="/admin/organizations"
@@ -52,7 +86,12 @@ export default function Sidebar() {
               <span className="hidden lg:block">Organizations</span>
             </Link>
           </div>
-          <div className="w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent">
+          <div
+            className={cn(
+              "w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent",
+              router.pathname === "/admin/users" && "bg-accent"
+            )}
+          >
             <Link
               className="lg:flex lg:items-center lg:gap-1 xl:gap-4"
               href="/admin/users"
@@ -153,7 +192,12 @@ export default function Sidebar() {
               </div>
             </CollapsibleContent>
           </Collapsible>
-          <div className="w-3/4 cursor-pointer rounded-lg py-2 hover:bg-accent lg:px-4">
+          <div
+            className={cn(
+              "w-3/4 cursor-pointer rounded-lg py-2 hover:bg-accent lg:px-4",
+              router.pathname === "/dashboard/organization" && "bg-accent"
+            )}
+          >
             <Link
               className="lg:flex lg:items-center lg:gap-1 xl:gap-4"
               href="/dashboard/organization"
@@ -179,7 +223,12 @@ export default function Sidebar() {
               <span className="hidden lg:block">Dashboard</span>
             </Link>
           </div>
-          <div className="w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent">
+          <div
+            className={cn(
+              "w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent",
+              router.pathname === "/dashboard/timetables" && "bg-accent"
+            )}
+          >
             <Link
               className="lg:flex lg:items-center lg:gap-1 xl:gap-4"
               href="/dashboard/timetables"

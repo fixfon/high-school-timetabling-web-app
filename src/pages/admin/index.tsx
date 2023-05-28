@@ -6,8 +6,8 @@ const AdminHome: NextPage = (props) => {
   return (
     <>
       <Head>
-        <title>Dashboard | TimetablePro</title>
-        <meta name="description" content="TimetablePro Dashboard" />
+        <title>Admin Dashboard | TimetablePro</title>
+        <meta name="description" content="TimetablePro Admin Dashboard" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>

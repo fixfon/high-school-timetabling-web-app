@@ -125,11 +125,7 @@ const ClassroomForm = ({
   const totalWeeklyHour = form.watch("lessons", []).reduce((acc, curr) => {
     return acc + curr.weeklyHour;
   }, 0);
-  const lessonWatch = form.watch("lessons");
 
-  useEffect(() => {
-    console.log("lessonWatch", lessonWatch);
-  }, [lessonWatch]);
   const {
     fields: lessonFields,
     append: appendLesson,
