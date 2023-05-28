@@ -9,7 +9,7 @@ import { DataTable } from "~/components/ui/data-table";
 import { useToast } from "~/components/ui/use-toast";
 import { api } from "~/utils/api";
 
-const departmentTableColumns: ColumnDef<
+const organizationTableColumns: ColumnDef<
   Organization & {
     OrganizationManager: User;
   }
@@ -118,7 +118,7 @@ const OrganizationTableView = () => {
   return (
     <div className="w-full pt-8 lg:w-4/5">
       <DataTable
-        columns={departmentTableColumns}
+        columns={organizationTableColumns}
         data={organizationData?.organizations ?? []}
         isLoading={isLoading}
       />

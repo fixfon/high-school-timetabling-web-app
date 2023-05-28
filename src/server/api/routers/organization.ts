@@ -1,6 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
+import userSchema from "~/schemas/user";
+import { hash } from "argon2";
 
 export const organizationRouter = createTRPCRouter({
   getOrganizations: protectedProcedure.query(async ({ ctx }) => {
@@ -25,7 +27,31 @@ export const organizationRouter = createTRPCRouter({
     };
   }),
 
-  editOrganization: protectedProcedure
+  getUsers: protectedProcedure.query(async ({ ctx }) => {
+    const userRes = await ctx.prisma.user.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        OrganizationManager: true,
+        OrganizationMember: true,
+        Teacher: true,
+      },
+    });
+
+    if (!userRes) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Could not find users",
+      });
+    }
+
+    return {
+      users: userRes,
+    };
+  }),
+
+  updateOrganization: protectedProcedure
     .input(
       z.object({
         organizationId: z.string(),
@@ -70,6 +96,54 @@ export const organizationRouter = createTRPCRouter({
       };
     }),
 
+  updateUser: protectedProcedure
+    .input(userSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { role } = ctx.session.user;
+
+      if (role !== "SUPERADMIN") {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
+      const { id, email, password, name, surname } = input;
+
+      const foundUser = await ctx.prisma.user.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      if (!foundUser) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Could not find user",
+        });
+      }
+
+      let hashedPassword = undefined;
+
+      if (password) hashedPassword = await hash(password);
+
+      const userRes = await ctx.prisma.user.update({
+        where: {
+          id,
+        },
+        data: {
+          email: email || undefined,
+          password: hashedPassword || undefined,
+          name: name || undefined,
+          surname: surname || undefined,
+        },
+      });
+
+      return {
+        success: true,
+      };
+    }),
+
   deleteOrganization: protectedProcedure
     .input(
       z.object({
@@ -97,6 +171,43 @@ export const organizationRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Could not delete organization",
+        });
+      }
+
+      return {
+        success: true,
+      };
+    }),
+
+  deleteUser: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { role } = ctx.session.user;
+
+      if (role !== "SUPERADMIN") {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to perform this action",
+        });
+      }
+
+      const { userId } = input;
+
+      // check if user is a manager of an organization and delete the organization?
+      const userRes = await ctx.prisma.user.delete({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!userRes) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Could not delete user",
         });
       }
 

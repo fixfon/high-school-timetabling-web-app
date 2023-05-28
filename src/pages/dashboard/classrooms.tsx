@@ -867,7 +867,7 @@ const classroomColumns: ColumnDef<
     },
   },
   {
-    accessorKey: "",
+    accessorKey: "totalLessons",
     header: "Total Lessons",
     cell: ({ row }) => {
       const lessons = row.original.ClassroomLesson;
@@ -876,7 +876,7 @@ const classroomColumns: ColumnDef<
     },
   },
   {
-    accessorKey: "",
+    accessorKey: "totalHours",
     header: "Total Hours",
     cell: ({ row }) => {
       const lessons = row.original.ClassroomLesson;
