@@ -190,7 +190,7 @@ model Organization {
     TeacherLesson         TeacherLesson[]
     ClassroomLesson       ClassroomLesson[]
 
-    OrganizationManager User   @relation("User_organizationManager", fields: [managerUserId], references: [id])
+    OrganizationManager User   @relation("User_organizationManager", fields: [managerUserId], references: [id], onDelete: Cascade)
     managerUserId       String @unique
 }
 
@@ -208,7 +208,7 @@ model User {
 
     Teacher Teacher?
 
-    OrganizationMember Organization? @relation("User_organizationMember", fields: [organizationId], references: [id])
+    OrganizationMember Organization? @relation("User_organizationMember", fields: [organizationId], references: [id], onDelete: Cascade)
     organizationId     String?
 
     OrganizationManager Organization? @relation("User_organizationManager")
