@@ -1,22 +1,22 @@
 import { type NextPage } from "next";
 import Head from "next/head";
+import Layout from "~/components/dashboard/Layout";
 
 const AdminHome: NextPage = (props) => {
   return (
     <>
       <Head>
-        <title>High School Timetabler</title>
-        <meta name="description" content="High School Timetabler" />
+        <title>Dashboard | TimetablePro</title>
+        <meta name="description" content="TimetablePro Dashboard" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
-        <div className="flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          <h1 className="text-5xl font-extrabold tracking-tight text-white">
-            Dummy App for High School Timetabling
+      <Layout>
+        <div className="flex w-full justify-center">
+          <h1 className="mt-12 text-2xl font-bold">
+            Admin Management Dashboard
           </h1>
-          
         </div>
-      </main>
+      </Layout>
     </>
   );
 };

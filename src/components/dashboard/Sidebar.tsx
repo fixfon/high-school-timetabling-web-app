@@ -13,6 +13,7 @@ import {
   GraduationCap,
   CalendarClock,
   School,
+  ScrollText,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
@@ -26,7 +27,42 @@ export default function Sidebar() {
 
   return (
     <nav className="relative h-[calc(100vh-56px)] w-full max-w-[10%] lg:max-w-[20%]">
-      {session?.user.memberRole === "MANAGER" ? (
+      {session?.user.role === "SUPERADMIN" ? (
+        <div className="flex h-[66%] flex-col items-start justify-center space-y-8 font-medium">
+          <div
+            className={cn(
+              "w-3/4 cursor-pointer rounded-lg py-2 hover:bg-accent lg:px-4",
+              router.pathname === "/dashboard" && "bg-accent"
+            )}
+          >
+            <Link
+              className="lg:flex lg:items-center lg:gap-1 xl:gap-4"
+              href="/admin/lessons"
+            >
+              <ScrollText size={24} className="mx-auto lg:m-0" />
+              <span className="hidden lg:block">Lessons</span>
+            </Link>
+          </div>
+          <div className="w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent">
+            <Link
+              className="lg:flex lg:items-center lg:gap-1 xl:gap-4"
+              href="/admin/organizations"
+            >
+              <School size={24} className="mx-auto lg:m-0" />
+              <span className="hidden lg:block">Organizations</span>
+            </Link>
+          </div>
+          <div className="w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent">
+            <Link
+              className="lg:flex lg:items-center lg:gap-1 xl:gap-4"
+              href="/admin/users"
+            >
+              <Users2 className="mx-auto lg:m-0" size={24} />
+              <span className="hidden lg:block">Users</span>
+            </Link>
+          </div>
+        </div>
+      ) : session?.user.memberRole === "MANAGER" ? (
         <div className="flex h-[66%] flex-col items-start justify-center font-medium md:space-y-8">
           <div
             className={cn(
@@ -104,11 +140,10 @@ export default function Sidebar() {
               <div
                 className={cn(
                   "cursor-pointer rounded-lg py-2 text-base font-normal hover:bg-accent lg:px-4",
-                  router.pathname === "/dashboard/timetables/view" &&
-                    "bg-accent"
+                  router.pathname === "/dashboard/timetables" && "bg-accent"
                 )}
               >
-                <Link href={"/dashboard/timetables/view"}>
+                <Link href={"/dashboard/timetables"}>
                   <CalendarClock
                     size={24}
                     className="mx-auto lg:m-0 lg:hidden"
@@ -132,11 +167,14 @@ export default function Sidebar() {
         <div className="flex h-[66%] flex-col items-start justify-center space-y-8 font-medium">
           <div
             className={cn(
-              "w-3/4 cursor-pointer rounded-lg lg:px-4 py-2 hover:bg-accent",
+              "w-3/4 cursor-pointer rounded-lg py-2 hover:bg-accent lg:px-4",
               router.pathname === "/dashboard" && "bg-accent"
             )}
           >
-            <Link className="lg:flex lg:items-center lg:gap-1 xl:gap-4" href="/dashboard">
+            <Link
+              className="lg:flex lg:items-center lg:gap-1 xl:gap-4"
+              href="/dashboard"
+            >
               <PanelTop size={24} className="mx-auto lg:m-0" />
               <span className="hidden lg:block">Dashboard</span>
             </Link>
@@ -144,7 +182,7 @@ export default function Sidebar() {
           <div className="w-3/4 cursor-pointer rounded-lg px-4 py-2 hover:bg-accent">
             <Link
               className="lg:flex lg:items-center lg:gap-1 xl:gap-4"
-              href="/dashboard/timetables/view"
+              href="/dashboard/timetables"
             >
               <CalendarClock size={24} className="mx-auto lg:m-0" />
               <span className="hidden lg:block">View Timetable</span>

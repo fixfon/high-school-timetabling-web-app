@@ -20,7 +20,12 @@ export default function Header() {
     <>
       <header className="h-14 w-full border-b bg-background shadow-sm">
         <div className="container flex h-full w-full items-center justify-between px-4 py-2 lg:px-0">
-          <Image src="/logo-light.svg" alt="TimetablePRO Logo Light" height={56} width={200} />
+          <Image
+            src="/logo-light.svg"
+            alt="TimetablePRO Logo Light"
+            height={56}
+            width={200}
+          />
           {status === "loading" ? (
             <div>Loading...</div>
           ) : (
@@ -42,7 +47,9 @@ export default function Header() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel className="font-normal">
-                  {session?.user.memberRole === "MANAGER"
+                  {session?.user.role === "SUPERADMIN"
+                    ? "Superadmin"
+                    : session?.user.memberRole === "MANAGER"
                     ? "Manager"
                     : "Teacher"}
                 </DropdownMenuLabel>
