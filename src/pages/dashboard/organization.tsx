@@ -18,6 +18,17 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/components/ui/use-toast";
@@ -25,6 +36,7 @@ import organizationSchema from "~/schemas/organization";
 import { type OrganizationInput } from "~/schemas/organization";
 import userSchema, { type UserInput } from "~/schemas/user";
 import { api } from "~/utils/api";
+import { signOut } from "next-auth/react";
 
 type EditUserFormProps = {
   defaultValue?: UserInput;
@@ -162,6 +174,7 @@ const EditUserForm = ({
         />
 
         <Button
+          className="w-3/5 self-center"
           disabled={form.formState.isSubmitting || !!isMutating}
           type="submit"
         >
@@ -386,6 +399,7 @@ const EditOrganizationForm = ({
         />
 
         <Button
+          className="w-3/5 self-center"
           disabled={form.formState.isSubmitting || !!isMutating}
           type="submit"
         >
@@ -407,6 +421,85 @@ const EditOrganizationForm = ({
         </Button>
       </form>
     </Form>
+  );
+};
+
+const DeleteOrganization = ({ organizationId }: { organizationId: string }) => {
+  const { toast } = useToast();
+
+  const { mutateAsync, isLoading } =
+    api.organization.deleteOrganization.useMutation({
+      onSuccess: async () => {
+        toast({
+          title: "Edit",
+          description: "Organization deleted successfully",
+        });
+
+        await signOut({ callbackUrl: "/" });
+      },
+      onError: (err) => {
+        toast({
+          variant: "destructive",
+          title: "Error deleting organization",
+          description: err.message,
+        });
+      },
+    });
+
+  const handleDelete = async () => {
+    toast({
+      title: "Delete",
+      description: "Deleting organization...",
+    });
+    try {
+      await mutateAsync({
+        organizationId: organizationId,
+      });
+    } catch (err) {}
+  };
+  2;
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          className="mt-10 w-2/5"
+          variant="destructive"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Oval
+                height={20}
+                width={20}
+                strokeWidth={4}
+                strokeWidthSecondary={3}
+                color="#5090FF"
+                secondaryColor="#FFFFFF"
+              />
+              <span>Delete Organization</span>
+            </>
+          ) : (
+            "Delete Organization"
+          )}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete your
+            account and remove your organization, teachers, classrooms,
+            timetables from our servers.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction className="font-semibold" onClick={handleDelete}>
+            Continue
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 
@@ -474,11 +567,16 @@ const OrganizationView = ({ userSession }: { userSession: User }) => {
     <div className="flex w-full flex-col items-center justify-start pt-12 lg:w-1/2">
       <h1 className="text-2xl font-bold">Edit Organization</h1>
       {!isLoading && !isRefetching && defaultValue ? (
-        <EditOrganizationForm
-          onSubmit={onSubmit}
-          isMutating={isEditing}
-          defaultValue={defaultValue}
-        />
+        <>
+          <EditOrganizationForm
+            onSubmit={onSubmit}
+            isMutating={isEditing}
+            defaultValue={defaultValue}
+          />
+          {userSession.orgId && (
+            <DeleteOrganization organizationId={userSession.orgId} />
+          )}
+        </>
       ) : (
         <div className="flex w-full items-center justify-center pt-20">
           <Oval
