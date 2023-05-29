@@ -608,7 +608,9 @@ const Organization: NextPage = (props) => {
           {session.status === "authenticated" ? (
             <>
               <ProfileView userSession={session.data.user} />
-              <OrganizationView userSession={session.data.user} />
+              {session.data.user.memberRole !== "TEACHER" && (
+                <OrganizationView userSession={session.data.user} />
+              )}
             </>
           ) : (
             <FullPageLoader />
