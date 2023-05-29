@@ -116,7 +116,7 @@ const OrganizationTableView = () => {
     api.organization.getOrganizations.useQuery();
 
   return (
-    <div className="w-full pt-8 lg:w-4/5">
+    <div className="w-full px-2 pt-8 lg:w-4/5 lg:px-0">
       <DataTable
         columns={organizationTableColumns}
         data={organizationData?.organizations ?? []}

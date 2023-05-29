@@ -188,7 +188,7 @@ const EditUserForm = ({
 
 const ProfileView = ({ userSession }: { userSession: User }) => {
   const { toast } = useToast();
-  const { update, data } = useSession();
+  const { update } = useSession();
   const [defaultValue, setDefaultValue] = useState<UserInput>();
 
   const {

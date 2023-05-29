@@ -693,7 +693,7 @@ const CreateTeacher = () => {
   };
 
   return (
-    <div className="flex w-3/4 flex-col items-center justify-start pt-12 lg:w-2/5">
+    <div className="flex w-full flex-col items-center justify-start pt-12 lg:w-2/5">
       <h1 className="text-2xl font-bold">Create Teacher</h1>
       <TeacherForm onSubmit={onSubmit} isMutating={isMutating} />
     </div>
