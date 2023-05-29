@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { NextPage } from "next";
 import Head from "next/head";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Oval } from "react-loader-spinner";
 import CTA from "~/components/home/Cta";
@@ -19,6 +20,7 @@ import { Textarea } from "~/components/ui/textarea";
 import contactSchema, { type ContactInput } from "~/schemas/contact";
 
 const ContactForm = () => {
+  const [success, setSuccess] = useState(false);
   const form = useForm<ContactInput>({
     resolver: zodResolver(contactSchema),
     mode: "onChange",
@@ -34,6 +36,7 @@ const ContactForm = () => {
   const onSubmit = (data: ContactInput) => {
     console.log(data);
     form.reset();
+    setSuccess(true);
   };
 
   return (
@@ -120,7 +123,7 @@ const ContactForm = () => {
           name="message"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number</FormLabel>
+              <FormLabel>Message</FormLabel>
               <FormControl>
                 <Textarea
                   disabled={form.formState.isSubmitting}
@@ -155,6 +158,17 @@ const ContactForm = () => {
             "Submit"
           )}
         </Button>
+
+        {success && (
+          <div className="flex w-full flex-col items-center justify-center pt-4">
+            <h2 className="text-center text-xl font-bold text-green-500">
+              Thank you for contacting us!
+            </h2>
+            <p className="text-center text-green-500">
+              We will get back to you as soon as possible.
+            </p>
+          </div>
+        )}
       </form>
     </Form>
   );
