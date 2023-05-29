@@ -24,7 +24,7 @@ export default function Header() {
             src="/logo-light.svg"
             alt="TimetablePRO Logo Light"
             height={56}
-            width={170}
+            width={230}
           />
           {status === "loading" ? (
             <div>Loading...</div>

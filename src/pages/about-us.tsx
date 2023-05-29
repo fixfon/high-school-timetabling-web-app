@@ -30,7 +30,7 @@ const AboutUs: NextPage = (props) => {
               className="rounded-lg"
             />
             <p>
-              Hello, We are a team working on creating a high school class
+              Hello, we are a team working on creating a high school class
               schedule management system. Our aim is to help students and
               teachers manage their class schedules more easily and efficiently.
             </p>

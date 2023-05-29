@@ -74,8 +74,8 @@ export default function Footer() {
             <Image
               src="/icon-light.svg"
               alt="TimetablePRO Icon Light"
-              width={150}
-              height={150}
+              width={175}
+              height={175}
             />
           </Link>
         </div>

@@ -34,7 +34,7 @@ const Privacy: NextPage = (props) => {
             <p>
               We use Your Personal data to provide and improve the Service. By
               using the Service, You agree to the collection and use of
-              information in accordance with this Privacy Policy. .
+              information in accordance with this Privacy Policy.
             </p>
             <h2 className="text-2xl font-bold">
               Interpretation and Definitions
