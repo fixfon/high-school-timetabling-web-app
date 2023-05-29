@@ -39,6 +39,14 @@ declare module "next-auth/jwt" {
   }
 }
 
+type JwtSession = {
+  user: {
+    name: string;
+    surname: string;
+    image?: string;
+  };
+};
+
 export const authOptions: NextAuthOptions = {
   callbacks: {
     redirect({ url, baseUrl }) {
@@ -48,8 +56,13 @@ export const authOptions: NextAuthOptions = {
       else if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
-    jwt({ token, user }) {
-      if (user) {
+    jwt({ token, user, trigger, session }) {
+      const updateSess = session as JwtSession;
+      if (trigger === "update" && updateSess?.user) {
+        token.name = updateSess?.user.name;
+        token.surname = updateSess?.user.surname;
+        token.image = updateSess?.user.image;
+      } else if (user) {
         token.id = user.id;
         token.name = user.name;
         token.surname = user.surname;
