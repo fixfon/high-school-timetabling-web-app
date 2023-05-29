@@ -51,6 +51,33 @@ export const organizationRouter = createTRPCRouter({
     };
   }),
 
+  getUser: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { userId } = input;
+
+      const userRes = await ctx.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!userRes) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Could not find user",
+        });
+      }
+
+      return {
+        user: userRes,
+      };
+    }),
+
   updateOrganization: protectedProcedure
     .input(
       z.object({
@@ -99,16 +126,16 @@ export const organizationRouter = createTRPCRouter({
   updateUser: protectedProcedure
     .input(userSchema)
     .mutation(async ({ ctx, input }) => {
-      const { role } = ctx.session.user;
+      const { role, id: sessionUserId } = ctx.session.user;
 
-      if (role !== "SUPERADMIN") {
+      const { id, email, password, name, surname, imageUrl } = input;
+
+      if (sessionUserId !== id && role !== "SUPERADMIN") {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "You are not authorized to perform this action",
         });
       }
-
-      const { id, email, password, name, surname } = input;
 
       const foundUser = await ctx.prisma.user.findUnique({
         where: {
@@ -127,7 +154,10 @@ export const organizationRouter = createTRPCRouter({
 
       if (password) hashedPassword = await hash(password);
 
-      const userRes = await ctx.prisma.user.update({
+      // get type of image
+      console.log("image", typeof imageUrl);
+
+      const updatedUser = await ctx.prisma.user.update({
         where: {
           id,
         },
@@ -136,11 +166,12 @@ export const organizationRouter = createTRPCRouter({
           password: hashedPassword || undefined,
           name: name || undefined,
           surname: surname || undefined,
+          image: imageUrl !== undefined ? imageUrl : undefined,
         },
       });
 
       return {
-        success: true,
+        updatedUser: updatedUser,
       };
     }),
 
