@@ -37,6 +37,7 @@ import { type OrganizationInput } from "~/schemas/organization";
 import userSchema, { type UserInput } from "~/schemas/user";
 import { api } from "~/utils/api";
 import { signOut } from "next-auth/react";
+import { Separator } from "~/components/ui/separator";
 
 type EditUserFormProps = {
   defaultValue?: UserInput;
@@ -609,7 +610,13 @@ const Organization: NextPage = (props) => {
             <>
               <ProfileView userSession={session.data.user} />
               {session.data.user.memberRole !== "TEACHER" && (
-                <OrganizationView userSession={session.data.user} />
+                <>
+                  <Separator
+                    orientation="vertical"
+                    className="my-auto h-[90%]"
+                  />
+                  <OrganizationView userSession={session.data.user} />
+                </>
               )}
             </>
           ) : (
