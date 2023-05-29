@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import userSchema from "~/schemas/user";
 import { hash } from "argon2";
+import organizationSchema from "~/schemas/organization";
 
 export const organizationRouter = createTRPCRouter({
   getOrganizations: protectedProcedure.query(async ({ ctx }) => {
@@ -24,6 +25,34 @@ export const organizationRouter = createTRPCRouter({
 
     return {
       organizations: organizationRes,
+    };
+  }),
+
+  getOrganization: protectedProcedure.query(async ({ ctx }) => {
+    const { orgId } = ctx.session.user;
+
+    if (!orgId) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "You must be a member of an organization to view it",
+      });
+    }
+
+    const organizationRes = await ctx.prisma.organization.findFirst({
+      where: {
+        id: orgId,
+      },
+    });
+
+    if (!organizationRes) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Could not find the organization",
+      });
+    }
+
+    return {
+      organization: organizationRes,
     };
   }),
 
@@ -79,19 +108,12 @@ export const organizationRouter = createTRPCRouter({
     }),
 
   updateOrganization: protectedProcedure
-    .input(
-      z.object({
-        organizationId: z.string(),
-        name: z.string().optional(),
-        description: z.string().optional(),
-        phone: z.string().length(10).optional(),
-      })
-    )
+    .input(organizationSchema)
     .mutation(async ({ ctx, input }) => {
-      const { role, memberRole } = ctx.session.user;
-      const { organizationId, name, description, phone } = input;
+      const { role, memberRole, id } = ctx.session.user;
+      const { id: organizationId, name, contact, description } = input;
 
-      if (role !== "SUPERADMIN" || memberRole !== "MANAGER") {
+      if (role !== "SUPERADMIN" && memberRole !== "MANAGER") {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "You are not authorized to perform this action",
@@ -105,11 +127,9 @@ export const organizationRouter = createTRPCRouter({
         data: {
           name: name || undefined,
           description: description || undefined,
-          contact: phone || undefined,
+          contact: contact || undefined,
         },
       });
-
-      console.log("updatedOrg", organizationRes);
 
       if (!organizationRes) {
         throw new TRPCError({
@@ -153,9 +173,6 @@ export const organizationRouter = createTRPCRouter({
       let hashedPassword = undefined;
 
       if (password) hashedPassword = await hash(password);
-
-      // get type of image
-      console.log("image", typeof imageUrl);
 
       const updatedUser = await ctx.prisma.user.update({
         where: {

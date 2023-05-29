@@ -19,7 +19,10 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/components/ui/use-toast";
+import organizationSchema from "~/schemas/organization";
+import { type OrganizationInput } from "~/schemas/organization";
 import userSchema, { type UserInput } from "~/schemas/user";
 import { api } from "~/utils/api";
 
@@ -258,12 +261,8 @@ const ProfileView = ({ userSession }: { userSession: User }) => {
     }
   }, [isLoading, setDefaultValues, userData?.user]);
 
-  useEffect(() => {
-    console.log("usersess", data?.user);
-  }, [data?.user]);
-
   return (
-    <div className="flex w-3/4 flex-col items-center justify-start pt-12 lg:w-2/5">
+    <div className="flex w-full flex-col items-center justify-start pt-12 lg:w-1/2">
       <h1 className="text-2xl font-bold">Edit Profile</h1>
       {!isLoading && !isRefetching && defaultValue ? (
         <EditUserForm
@@ -287,9 +286,214 @@ const ProfileView = ({ userSession }: { userSession: User }) => {
   );
 };
 
-// const OrganizationView = ({ userSession }: { userSession: User }) => {
-//   return <div></div>;
-// };
+type EditOrganizationFormProps = {
+  defaultValue?: OrganizationInput;
+  onSubmit: (data: OrganizationInput) => Promise<void>;
+  isMutating?: boolean;
+};
+
+const EditOrganizationForm = ({
+  defaultValue,
+  onSubmit,
+  isMutating,
+}: EditOrganizationFormProps) => {
+  const defaultValues = useMemo(() => {
+    return {
+      id: defaultValue?.id ?? undefined,
+      name: defaultValue?.name ?? "",
+      description: defaultValue?.description ?? "",
+      contact: defaultValue?.contact ?? "",
+    };
+  }, [defaultValue]);
+
+  const form = useForm<OrganizationInput>({
+    resolver: zodResolver(organizationSchema),
+    mode: "onChange",
+    defaultValues: defaultValues,
+  });
+
+  const formSubmit = async (data: OrganizationInput) => {
+    await onSubmit(data);
+  };
+
+  useEffect(() => {
+    form.reset(defaultValues);
+  }, [defaultValues, form]);
+
+  return (
+    <Form {...form}>
+      <form
+        className="mt-8 flex w-full flex-col space-y-3 px-8"
+        onSubmit={form.handleSubmit(formSubmit)}
+      >
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormDescription>Name of the organization</FormDescription>
+              <FormControl>
+                <Input
+                  disabled={form.formState.isSubmitting || !!isMutating}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="contact"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Contact</FormLabel>
+              <FormDescription>
+                Contact number for the organization
+              </FormDescription>
+              <FormControl>
+                <Input
+                  disabled={form.formState.isSubmitting || !!isMutating}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormDescription>
+                Description for the organization
+              </FormDescription>
+              <FormControl>
+                <Textarea
+                  disabled={form.formState.isSubmitting || !!isMutating}
+                  className="resize-none"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button
+          disabled={form.formState.isSubmitting || !!isMutating}
+          type="submit"
+        >
+          {form.formState.isSubmitting || !!isMutating ? (
+            <>
+              <Oval
+                height={20}
+                width={20}
+                strokeWidth={4}
+                strokeWidthSecondary={3}
+                color="#5090FF"
+                secondaryColor="#FFFFFF"
+              />
+              <span>Submit</span>
+            </>
+          ) : (
+            "Submit"
+          )}
+        </Button>
+      </form>
+    </Form>
+  );
+};
+
+const OrganizationView = ({ userSession }: { userSession: User }) => {
+  const { toast } = useToast();
+  const [defaultValue, setDefaultValue] = useState<OrganizationInput>();
+
+  const {
+    data: organizationData,
+    isLoading,
+    isRefetching,
+  } = api.organization.getOrganization.useQuery(undefined, {
+    enabled: !!userSession.orgId,
+    staleTime: Infinity,
+  });
+
+  const trpcContext = api.useContext();
+  const { mutateAsync, isLoading: isEditing } =
+    api.organization.updateOrganization.useMutation({
+      onSuccess: async () => {
+        toast({
+          title: "Edit",
+          description: "Organization edited successfully",
+        });
+
+        await trpcContext.organization.getOrganization.invalidate();
+      },
+      onError: (err) => {
+        toast({
+          variant: "destructive",
+          title: "Error editing organization",
+          description: err.message,
+        });
+      },
+    });
+
+  const onSubmit = async (data: OrganizationInput) => {
+    toast({
+      title: "Edit",
+      description: "Editing organization...",
+    });
+    try {
+      await mutateAsync(data);
+    } catch (err) {}
+  };
+
+  const setDefaultValues = useCallback(() => {
+    if (!organizationData?.organization) return;
+
+    setDefaultValue({
+      id: organizationData?.organization.id,
+      name: organizationData?.organization.name,
+      contact: organizationData?.organization.contact ?? "",
+      description: organizationData?.organization.description ?? "",
+    });
+  }, [organizationData?.organization]);
+
+  useEffect(() => {
+    if (!isLoading && organizationData?.organization) {
+      setDefaultValues();
+    }
+  }, [isLoading, setDefaultValues, organizationData?.organization]);
+
+  return (
+    <div className="flex w-full flex-col items-center justify-start pt-12 lg:w-1/2">
+      <h1 className="text-2xl font-bold">Edit Organization</h1>
+      {!isLoading && !isRefetching && defaultValue ? (
+        <EditOrganizationForm
+          onSubmit={onSubmit}
+          isMutating={isEditing}
+          defaultValue={defaultValue}
+        />
+      ) : (
+        <div className="flex w-full items-center justify-center pt-20">
+          <Oval
+            height={50}
+            width={50}
+            strokeWidth={5}
+            strokeWidthSecondary={3}
+            color="#F8FAFC"
+            secondaryColor="#0F1729"
+          />
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Organization: NextPage = (props) => {
   const session = useSession();
@@ -306,7 +510,7 @@ const Organization: NextPage = (props) => {
           {session.status === "authenticated" ? (
             <>
               <ProfileView userSession={session.data.user} />
-              {/* <OrganizationView userSession={session.data.user} /> */}
+              <OrganizationView userSession={session.data.user} />
             </>
           ) : (
             <FullPageLoader />
