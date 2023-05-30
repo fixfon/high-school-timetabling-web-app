@@ -13,6 +13,7 @@ export const organizationRouter = createTRPCRouter({
       },
       include: {
         OrganizationManager: true,
+        OrganizationClassHour: true,
       },
     });
 
@@ -41,6 +42,9 @@ export const organizationRouter = createTRPCRouter({
     const organizationRes = await ctx.prisma.organization.findFirst({
       where: {
         id: orgId,
+      },
+      include: {
+        OrganizationClassHour: true,
       },
     });
 
@@ -110,8 +114,16 @@ export const organizationRouter = createTRPCRouter({
   updateOrganization: protectedProcedure
     .input(organizationSchema)
     .mutation(async ({ ctx, input }) => {
-      const { role, memberRole, id } = ctx.session.user;
-      const { id: organizationId, name, contact, description } = input;
+      const { role, memberRole } = ctx.session.user;
+      const {
+        id: organizationId,
+        name,
+        contact,
+        description,
+        startHour,
+        breakMinute,
+        lunchMinute,
+      } = input;
 
       if (role !== "SUPERADMIN" && memberRole !== "MANAGER") {
         throw new TRPCError({
@@ -128,6 +140,20 @@ export const organizationRouter = createTRPCRouter({
           name: name || undefined,
           description: description || undefined,
           contact: contact || undefined,
+          OrganizationClassHour: {
+            upsert: {
+              update: {
+                startHour: startHour || undefined,
+                breakMinute: breakMinute || undefined,
+                lunchMinute: lunchMinute || undefined,
+              },
+              create: {
+                startHour: startHour || "09:00",
+                breakMinute: breakMinute || 10,
+                lunchMinute: lunchMinute || 40,
+              },
+            },
+          },
         },
       });
 

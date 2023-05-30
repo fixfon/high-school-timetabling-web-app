@@ -317,6 +317,9 @@ const EditOrganizationForm = ({
       name: defaultValue?.name ?? "",
       description: defaultValue?.description ?? "",
       contact: defaultValue?.contact ?? "",
+      startHour: defaultValue?.startHour ?? "09:00",
+      breakMinute: defaultValue?.breakMinute ?? 10,
+      lunchMinute: defaultValue?.lunchMinute ?? 40,
     };
   }, [defaultValue]);
 
@@ -392,6 +395,78 @@ const EditOrganizationForm = ({
                   disabled={form.formState.isSubmitting || !!isMutating}
                   className="resize-none"
                   {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="startHour"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Start Hour</FormLabel>
+              <FormDescription>
+                Set the lesson start hour for the organization
+              </FormDescription>
+              <FormControl>
+                <Input
+                  type="time"
+                  disabled={form.formState.isSubmitting || !!isMutating}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="breakMinute"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Break Time</FormLabel>
+              <FormDescription>
+                Set the break time between lessons for the organization (in
+                minutes)
+              </FormDescription>
+              <FormControl>
+                <Input
+                  type="number"
+                  disabled={form.formState.isSubmitting || !!isMutating}
+                  inputMode="numeric"
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(Number(e.target.value));
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="lunchMinute"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Lunch Time</FormLabel>
+              <FormDescription>
+                Set the lunch time for the organization (in minutes)
+              </FormDescription>
+              <FormControl>
+                <Input
+                  type="number"
+                  disabled={form.formState.isSubmitting || !!isMutating}
+                  inputMode="numeric"
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(Number(e.target.value));
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -555,6 +630,13 @@ const OrganizationView = ({ userSession }: { userSession: User }) => {
       name: organizationData?.organization.name,
       contact: organizationData?.organization.contact ?? "",
       description: organizationData?.organization.description ?? "",
+      startHour:
+        organizationData?.organization.OrganizationClassHour?.startHour ??
+        "09:00",
+      breakMinute:
+        organizationData?.organization.OrganizationClassHour?.breakMinute ?? 10,
+      lunchMinute:
+        organizationData?.organization.OrganizationClassHour?.lunchMinute ?? 40,
     });
   }, [organizationData?.organization]);
 

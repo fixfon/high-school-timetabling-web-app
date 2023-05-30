@@ -67,6 +67,13 @@ export const registerRouter = createTRPCRouter({
         data: {
           name: organization,
           contact: phone,
+          OrganizationClassHour: {
+            create: {
+              startHour: "09:00",
+              breakMinute: 10,
+              lunchMinute: 40,
+            },
+          },
           User_members: {
             connect: {
               id: user.id,
