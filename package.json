@@ -33,6 +33,7 @@
     "@trpc/react-query": "^10.25.1",
     "@trpc/server": "^10.25.1",
     "argon2": "^0.30.3",
+    "axios": "^1.4.0",
     "class-variance-authority": "^0.6.0",
     "clsx": "^1.2.1",
     "cmdk": "^0.2.0",

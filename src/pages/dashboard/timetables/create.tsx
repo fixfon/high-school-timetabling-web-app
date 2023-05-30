@@ -49,7 +49,8 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { useToast } from "~/components/ui/use-toast";
 import { ToastAction } from "~/components/ui/toast";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { TimetableRequest } from "~/utils/create-timetable-request";
 
 const CommandLoading = () => {
   return (
@@ -138,10 +139,6 @@ const AssignTeachersCombobox = ({
 }: AssignTeachersComboboxProps) => {
   const { data: teacherData, isLoading: isTeacherDataLoading } =
     api.teacher.getTeachers.useQuery(undefined, { staleTime: Infinity });
-
-  useEffect(() => {
-    console.log("field", field);
-  }, [field]);
 
   return (
     <FormItem>
@@ -248,10 +245,6 @@ const CreateTimetableForm = ({
     form.reset();
     await onSubmit(data);
   };
-
-  useEffect(() => {
-    console.log("timetableFields", timetableFields);
-  }, [timetableFields]);
 
   return (
     <Form {...form}>
@@ -387,11 +380,12 @@ const CreateTimetableForm = ({
 const Create: NextPage = (props) => {
   const { toast } = useToast();
   const router = useRouter();
+  const [response, setResponse] = useState<TimetableRequest>();
 
   const trpcContext = api.useContext();
   const { mutateAsync: createTimetable, isLoading } =
     api.timetable.createTimetable.useMutation({
-      onSuccess: async () => {
+      onSuccess: async ({ response }) => {
         toast({
           title: "Create",
           description: "Timetable created successfully",
@@ -404,6 +398,8 @@ const Create: NextPage = (props) => {
             </ToastAction>
           ),
         });
+
+        setResponse(response);
 
         await trpcContext.classroom.getClassrooms.invalidate();
         await trpcContext.teacher.getTeachers.invalidate();
@@ -458,6 +454,7 @@ const Create: NextPage = (props) => {
             </p>
           </div>
           <CreateTimetableForm onSubmit={onSubmit} isMutating={isLoading} />
+          {response && <pre>{JSON.stringify(response, null, 2)}</pre>}
         </div>
       </Layout>
     </>
