@@ -565,116 +565,118 @@ const ClassroomForm = ({
                                             <CommandEmpty>
                                               No lesson found.
                                             </CommandEmpty>
-                                            <CommandGroup>
-                                              {isLessonSet &&
-                                                availableLessons.map(
-                                                  (lesson) => (
-                                                    <CommandItem
-                                                      key={lesson.id}
-                                                      onSelect={() => {
-                                                        field.onChange(
-                                                          lesson.name
-                                                        );
-                                                        if (
-                                                          masterField?.value
-                                                            ?.lessonId
-                                                        ) {
-                                                          // add previous lesson to availableLessons
-                                                          // deduct this selected from availableLessons
-                                                          // add selected lesson to selectedLessons
-                                                          const previousLesson =
-                                                            selectedLessons.find(
-                                                              (l) =>
-                                                                l.id ===
-                                                                masterField
-                                                                  .value
-                                                                  .lessonId
-                                                            );
-
-                                                          const selectedLesson =
-                                                            availableLessons.find(
-                                                              (l) =>
-                                                                l.id ===
-                                                                lesson.id
-                                                            );
-
+                                            <ScrollArea className="h-56">
+                                              <CommandGroup>
+                                                {isLessonSet &&
+                                                  availableLessons.map(
+                                                    (lesson) => (
+                                                      <CommandItem
+                                                        key={lesson.id}
+                                                        onSelect={() => {
+                                                          field.onChange(
+                                                            lesson.name
+                                                          );
                                                           if (
-                                                            previousLesson &&
-                                                            selectedLesson
+                                                            masterField?.value
+                                                              ?.lessonId
                                                           ) {
-                                                            setSelectedLessons(
-                                                              (prev) => {
-                                                                const filtered =
-                                                                  prev.filter(
-                                                                    (l) =>
-                                                                      l.id !==
-                                                                      previousLesson.id
-                                                                  );
-
-                                                                return [
-                                                                  ...filtered,
-                                                                  selectedLesson,
-                                                                ];
-                                                              }
-                                                            );
-
-                                                            setAvailableLessons(
-                                                              (prev) => {
-                                                                const filtered =
-                                                                  prev.filter(
-                                                                    (l) =>
-                                                                      l.id !==
-                                                                      selectedLesson.id
-                                                                  );
-
-                                                                return [
-                                                                  ...filtered,
-                                                                  previousLesson,
-                                                                ];
-                                                              }
-                                                            );
-                                                          }
-                                                        } else {
-                                                          // first select add this lesson to selectedLesson
-                                                          // deduct from availableLessons
-                                                          setSelectedLessons(
-                                                            (prev) => [
-                                                              ...prev,
-                                                              lesson,
-                                                            ]
-                                                          );
-                                                          setAvailableLessons(
-                                                            (prev) =>
-                                                              prev.filter(
+                                                            // add previous lesson to availableLessons
+                                                            // deduct this selected from availableLessons
+                                                            // add selected lesson to selectedLessons
+                                                            const previousLesson =
+                                                              selectedLessons.find(
                                                                 (l) =>
-                                                                  l.id !==
+                                                                  l.id ===
+                                                                  masterField
+                                                                    .value
+                                                                    .lessonId
+                                                              );
+
+                                                            const selectedLesson =
+                                                              availableLessons.find(
+                                                                (l) =>
+                                                                  l.id ===
                                                                   lesson.id
-                                                              )
-                                                          );
-                                                        }
+                                                              );
 
-                                                        form.setValue(
-                                                          `lessons.${lessonIndex}.lessonId`,
-                                                          lesson.id
-                                                        );
+                                                            if (
+                                                              previousLesson &&
+                                                              selectedLesson
+                                                            ) {
+                                                              setSelectedLessons(
+                                                                (prev) => {
+                                                                  const filtered =
+                                                                    prev.filter(
+                                                                      (l) =>
+                                                                        l.id !==
+                                                                        previousLesson.id
+                                                                    );
 
-                                                        setIsLessonPopoversOpen(
-                                                          (prev) => {
-                                                            const newPopovers =
-                                                              [...prev];
-                                                            newPopovers[
-                                                              lessonIndex
-                                                            ] = false;
-                                                            return newPopovers;
+                                                                  return [
+                                                                    ...filtered,
+                                                                    selectedLesson,
+                                                                  ];
+                                                                }
+                                                              );
+
+                                                              setAvailableLessons(
+                                                                (prev) => {
+                                                                  const filtered =
+                                                                    prev.filter(
+                                                                      (l) =>
+                                                                        l.id !==
+                                                                        selectedLesson.id
+                                                                    );
+
+                                                                  return [
+                                                                    ...filtered,
+                                                                    previousLesson,
+                                                                  ];
+                                                                }
+                                                              );
+                                                            }
+                                                          } else {
+                                                            // first select add this lesson to selectedLesson
+                                                            // deduct from availableLessons
+                                                            setSelectedLessons(
+                                                              (prev) => [
+                                                                ...prev,
+                                                                lesson,
+                                                              ]
+                                                            );
+                                                            setAvailableLessons(
+                                                              (prev) =>
+                                                                prev.filter(
+                                                                  (l) =>
+                                                                    l.id !==
+                                                                    lesson.id
+                                                                )
+                                                            );
                                                           }
-                                                        );
-                                                      }}
-                                                    >
-                                                      {lesson.name}
-                                                    </CommandItem>
-                                                  )
-                                                )}
-                                            </CommandGroup>
+
+                                                          form.setValue(
+                                                            `lessons.${lessonIndex}.lessonId`,
+                                                            lesson.id
+                                                          );
+
+                                                          setIsLessonPopoversOpen(
+                                                            (prev) => {
+                                                              const newPopovers =
+                                                                [...prev];
+                                                              newPopovers[
+                                                                lessonIndex
+                                                              ] = false;
+                                                              return newPopovers;
+                                                            }
+                                                          );
+                                                        }}
+                                                      >
+                                                        {lesson.name}
+                                                      </CommandItem>
+                                                    )
+                                                  )}
+                                              </CommandGroup>
+                                            </ScrollArea>
                                           </Command>
                                         </PopoverContent>
                                       </Popover>

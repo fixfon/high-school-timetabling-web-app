@@ -82,6 +82,7 @@ import {
 } from "~/components/ui/form";
 import { Checkbox } from "~/components/ui/checkbox";
 import { cn } from "~/utils/cn";
+import { ScrollArea } from "~/components/ui/scroll-area";
 
 const baseTimePref: TeacherTimePreferenceInput[] = [
   {
@@ -596,35 +597,37 @@ const TeacherForm = ({
                   <Command className="w-80">
                     <CommandInput placeholder="Search lesson..." />
                     <CommandEmpty>No lesson found.</CommandEmpty>
-                    <CommandGroup>
-                      {availableLessons.map((lesson) => (
-                        <CommandItem
-                          key={lesson.id}
-                          onSelect={() => {
-                            // push value to form lessonId array
-                            const prevLessonIds = form.getValues("lessonIds");
-                            if (prevLessonIds) {
-                              form.setValue("lessonIds", [
-                                ...prevLessonIds,
-                                lesson.id,
-                              ]);
-                            } else {
-                              form.setValue("lessonIds", [lesson.id]);
-                            }
+                    <ScrollArea className="h-56">
+                      <CommandGroup>
+                        {availableLessons.map((lesson) => (
+                          <CommandItem
+                            key={lesson.id}
+                            onSelect={() => {
+                              // push value to form lessonId array
+                              const prevLessonIds = form.getValues("lessonIds");
+                              if (prevLessonIds) {
+                                form.setValue("lessonIds", [
+                                  ...prevLessonIds,
+                                  lesson.id,
+                                ]);
+                              } else {
+                                form.setValue("lessonIds", [lesson.id]);
+                              }
 
-                            // add selected lesson to selected lessons
-                            setSelectedLessons((prev) => [lesson, ...prev]);
+                              // add selected lesson to selected lessons
+                              setSelectedLessons((prev) => [lesson, ...prev]);
 
-                            // remove selected lesson from available lessons
-                            setAvailableLessons((prev) =>
-                              prev.filter((l) => l.id !== lesson.id)
-                            );
-                          }}
-                        >
-                          {lesson.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
+                              // remove selected lesson from available lessons
+                              setAvailableLessons((prev) =>
+                                prev.filter((l) => l.id !== lesson.id)
+                              );
+                            }}
+                          >
+                            {lesson.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </ScrollArea>
                   </Command>
                 </PopoverContent>
               </Popover>
@@ -941,7 +944,7 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
   );
 };
 
-const Teachers: NextPage = () => {
+const Teachers: NextPage = (props) => {
   return (
     <>
       <Head>
