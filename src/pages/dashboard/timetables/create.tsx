@@ -49,6 +49,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { useToast } from "~/components/ui/use-toast";
 import { ToastAction } from "~/components/ui/toast";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 const CommandLoading = () => {
   return (
@@ -138,6 +139,10 @@ const AssignTeachersCombobox = ({
   const { data: teacherData, isLoading: isTeacherDataLoading } =
     api.teacher.getTeachers.useQuery(undefined, { staleTime: Infinity });
 
+  useEffect(() => {
+    console.log("field", field);
+  }, [field]);
+
   return (
     <FormItem>
       <Popover>
@@ -150,7 +155,7 @@ const AssignTeachersCombobox = ({
               role="combobox"
               className={cn(
                 "w-full justify-between",
-                field?.value?.length == 0 && "text-muted-foreground"
+                field.value?.length == 0 && "text-muted-foreground"
               )}
             >
               {field.value?.length > 0 ? (
@@ -181,7 +186,11 @@ const AssignTeachersCombobox = ({
                             field.value?.filter((v) => v !== value)
                           );
                         } else {
-                          field.onChange([...field.value, value]);
+                          if (field.value?.length === 0) {
+                            field.onChange([value]);
+                          } else {
+                            field.onChange([...field.value, value]);
+                          }
                         }
                       }}
                     >
@@ -240,6 +249,10 @@ const CreateTimetableForm = ({
     await onSubmit(data);
   };
 
+  useEffect(() => {
+    console.log("timetableFields", timetableFields);
+  }, [timetableFields]);
+
   return (
     <Form {...form}>
       <form
@@ -273,29 +286,29 @@ const CreateTimetableForm = ({
                           const y = Number(b.classLevel.slice(1, 3));
                           return x - y;
                         })
-                        .map((classroom, clIndex) => (
-                          <FormField
-                            key={classroom.id}
-                            control={form.control}
-                            name={`timetable.${clIndex}`}
-                            render={() => (
-                              <TableRow key={classroom.id}>
-                                <TableCell className="text-center">
-                                  {ClassLevelMap[classroom.classLevel]}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                  {classroom.code}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                  {classroom.branch}
-                                </TableCell>
-                                <TableCell className="max-w-[96px] text-center">
-                                  {timetableFields.find(
+                        .map((classroom) => (
+                          <TableRow key={classroom.id}>
+                            <TableCell className="text-center">
+                              {ClassLevelMap[classroom.classLevel]}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {classroom.code}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {classroom.branch}
+                            </TableCell>
+                            <TableCell className="max-w-[96px] text-center">
+                              {timetableFields.find(
+                                (tf) => tf.classroomId === classroom.id
+                              ) ? (
+                                (() => {
+                                  const fieldIndex = timetableFields.findIndex(
                                     (tf) => tf.classroomId === classroom.id
-                                  ) ? (
+                                  );
+                                  return (
                                     <FormField
                                       control={form.control}
-                                      name={`timetable.${clIndex}.teacherIdList`}
+                                      name={`timetable.${fieldIndex}.teacherIdList`}
                                       render={({ field }) => (
                                         <AssignTeachersCombobox
                                           field={field}
@@ -306,29 +319,28 @@ const CreateTimetableForm = ({
                                         />
                                       )}
                                     />
-                                  ) : (
-                                    <Button
-                                      disabled={
-                                        form.formState.isSubmitting ||
-                                        !!isMutating
-                                      }
-                                      type="button"
-                                      size="sm"
-                                      className={"m-0 justify-between"}
-                                      onClick={() => {
-                                        appendClassroom({
-                                          classroomId: classroom.id,
-                                          teacherIdList: [],
-                                        });
-                                      }}
-                                    >
-                                      Assign Teacher
-                                    </Button>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            )}
-                          />
+                                  );
+                                })()
+                              ) : (
+                                <Button
+                                  disabled={
+                                    form.formState.isSubmitting || !!isMutating
+                                  }
+                                  type="button"
+                                  size="sm"
+                                  className={"m-0 justify-between"}
+                                  onClick={() => {
+                                    appendClassroom({
+                                      classroomId: classroom.id,
+                                      teacherIdList: [],
+                                    });
+                                  }}
+                                >
+                                  Assign Teacher
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
                         ))
                     )}
                   </TableBody>
