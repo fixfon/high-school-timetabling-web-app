@@ -2,7 +2,11 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useForm } from "react-hook-form";
+import {
+  type ControllerRenderProps,
+  useFieldArray,
+  useForm,
+} from "react-hook-form";
 import Layout from "~/components/dashboard/Layout";
 import { Button } from "~/components/ui/button";
 import {
@@ -15,10 +19,8 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "~/components/ui/form";
 import {
@@ -35,6 +37,18 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import { Oval } from "react-loader-spinner";
 import { ClassLevelMap } from "~/utils/enum-mapper";
 import Link from "next/link";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { Skeleton } from "~/components/ui/skeleton";
+import { useToast } from "~/components/ui/use-toast";
+import { ToastAction } from "~/components/ui/toast";
+import { useRouter } from "next/router";
 
 const CommandLoading = () => {
   return (
@@ -53,14 +67,166 @@ const CommandLoading = () => {
   );
 };
 
-const CreateTimetableForm = ({ isMutating }: { isMutating: boolean }) => {
+const TableLoading = () => {
+  return (
+    <>
+      <TableRow>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+        <TableCell className="justify-center">
+          <Skeleton className="h-4 w-full" />
+        </TableCell>
+      </TableRow>
+    </>
+  );
+};
+
+type AssignTeachersComboboxProps = {
+  isSubmitting: boolean;
+  isMutating: boolean;
+  field: ControllerRenderProps<
+    {
+      timetable: {
+        classroomId: string;
+        teacherIdList: string[];
+      }[];
+    },
+    `timetable.${number}.teacherIdList`
+  >;
+};
+
+const AssignTeachersCombobox = ({
+  isSubmitting,
+  isMutating,
+  field,
+}: AssignTeachersComboboxProps) => {
+  const { data: teacherData, isLoading: isTeacherDataLoading } =
+    api.teacher.getTeachers.useQuery(undefined, { staleTime: Infinity });
+
+  return (
+    <FormItem>
+      <Popover>
+        <PopoverTrigger asChild>
+          <FormControl>
+            <Button
+              disabled={isSubmitting || !!isMutating}
+              type="button"
+              variant="outline"
+              role="combobox"
+              className={cn(
+                "w-full justify-between",
+                field?.value?.length == 0 && "text-muted-foreground"
+              )}
+            >
+              {field.value?.length > 0 ? (
+                <span>Select teachers ({field.value?.length})</span>
+              ) : (
+                "Select teachers"
+              )}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </FormControl>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-full p-0">
+          <Command className="w-64">
+            <CommandInput placeholder="Search teacher..." />
+            <CommandEmpty>No teacher found.</CommandEmpty>
+            {isTeacherDataLoading ? (
+              <CommandLoading />
+            ) : (
+              <ScrollArea className="h-56">
+                <CommandGroup>
+                  {teacherData?.teachers.map((teacher) => (
+                    <CommandItem
+                      key={teacher.id}
+                      value={teacher.id}
+                      onSelect={(value) => {
+                        if (field.value?.includes(value)) {
+                          field.onChange(
+                            field.value?.filter((v) => v !== value)
+                          );
+                        } else {
+                          field.onChange([...field.value, value]);
+                        }
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          field.value?.includes(teacher.id)
+                            ? "opacity-100"
+                            : "opacity-0"
+                        )}
+                      />
+                      {teacher.name} {teacher.surname}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </ScrollArea>
+            )}
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </FormItem>
+  );
+};
+
+const CreateTimetableForm = ({
+  isMutating,
+  onSubmit,
+}: {
+  isMutating: boolean;
+  onSubmit: (data: CreateTimetableInput) => Promise<void>;
+}) => {
   const form = useForm<CreateTimetableInput>({
     resolver: zodResolver(createTimetableSchema),
     mode: "onChange",
     defaultValues: {
-      classroomIdList: [],
-      teacherIdList: [],
+      timetable: [],
     },
+  });
+  const {
+    fields: timetableFields,
+    append: appendClassroom,
+    remove: removeClassroom,
+  } = useFieldArray({
+    name: "timetable",
+    control: form.control,
   });
 
   const { data: classroomData, isLoading: isClassroomDataLoading } =
@@ -68,261 +234,113 @@ const CreateTimetableForm = ({ isMutating }: { isMutating: boolean }) => {
       staleTime: Infinity,
     });
 
-  const { data: teacherData, isLoading: isTeacherDataLoading } =
-    api.teacher.getTeachers.useQuery(undefined, { staleTime: Infinity });
-
-  const formSubmit = (data: CreateTimetableInput) => {
-    console.log(data);
+  const formSubmit = async (data: CreateTimetableInput) => {
+    removeClassroom();
+    form.reset();
+    await onSubmit(data);
   };
 
   return (
     <Form {...form}>
       <form
-        className="mt-8 flex w-full flex-col items-center justify-center gap-12 px-8"
+        className="my-8 flex w-full flex-col items-center justify-center gap-12 px-4 lg:px-8"
         onSubmit={form.handleSubmit(formSubmit)}
       >
         <div className="flex w-full flex-col gap-12 md:flex-row">
           <FormField
             control={form.control}
-            name="classroomIdList"
-            render={({ field }) => (
-              <FormItem className="w-full md:w-1/2">
-                <FormLabel>Classrooms</FormLabel>
-                <FormDescription>
-                  Select classrooms that you want to create timetable for.
-                </FormDescription>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        disabled={form.formState.isSubmitting || !!isMutating}
-                        type="button"
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          "w-full justify-between",
-                          field?.value?.length == 0 && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value?.length > 0 ? (
-                          <span>Select classrooms ({field.value?.length})</span>
-                        ) : (
-                          "Select classrooms"
-                        )}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent align="start" className="w-full p-0">
-                    <Command className="w-80">
-                      <CommandInput placeholder="Search classroom..." />
-                      <CommandEmpty>No classroom found.</CommandEmpty>
-                      {isClassroomDataLoading ? (
-                        <CommandLoading />
-                      ) : (
-                        <ScrollArea className="h-56">
-                          <CommandGroup heading="9. Grade">
-                            {classroomData?.classrooms
-                              .filter((cl) => cl.classLevel === "L9")
-                              .map((classroom) => (
-                                <CommandItem
-                                  key={classroom.id}
-                                  value={classroom.id}
-                                  onSelect={(value) => {
-                                    if (field.value?.includes(value)) {
-                                      field.onChange(
-                                        field.value?.filter((v) => v !== value)
-                                      );
-                                    } else {
-                                      field.onChange([...field.value, value]);
-                                    }
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      field.value?.includes(classroom.id)
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {ClassLevelMap[classroom.classLevel]}{" "}
-                                  {classroom.code} {classroom.branch}
-                                </CommandItem>
-                              ))}
-                          </CommandGroup>
-                          <CommandGroup heading="10. Grade">
-                            {classroomData?.classrooms
-                              .filter((cl) => cl.classLevel === "L10")
-                              .map((classroom) => (
-                                <CommandItem
-                                  key={classroom.id}
-                                  value={classroom.id}
-                                  onSelect={(value) => {
-                                    if (field.value?.includes(value)) {
-                                      field.onChange(
-                                        field.value?.filter((v) => v !== value)
-                                      );
-                                    } else {
-                                      field.onChange([...field.value, value]);
-                                    }
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      field.value?.includes(classroom.id)
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {ClassLevelMap[classroom.classLevel]}{" "}
-                                  {classroom.code} {classroom.branch}
-                                </CommandItem>
-                              ))}
-                          </CommandGroup>
-                          <CommandGroup heading="11. Grade">
-                            {classroomData?.classrooms
-                              .filter((cl) => cl.classLevel === "L11")
-                              .map((classroom) => (
-                                <CommandItem
-                                  key={classroom.id}
-                                  value={classroom.id}
-                                  onSelect={(value) => {
-                                    if (field.value?.includes(value)) {
-                                      field.onChange(
-                                        field.value?.filter((v) => v !== value)
-                                      );
-                                    } else {
-                                      field.onChange([...field.value, value]);
-                                    }
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      field.value?.includes(classroom.id)
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {ClassLevelMap[classroom.classLevel]}{" "}
-                                  {classroom.code} - {classroom.branch}
-                                </CommandItem>
-                              ))}
-                          </CommandGroup>
-                          <CommandGroup heading="12. Grade">
-                            {classroomData?.classrooms
-                              .filter((cl) => cl.classLevel === "L12")
-                              .map((classroom) => (
-                                <CommandItem
-                                  key={classroom.id}
-                                  value={classroom.id}
-                                  onSelect={(value) => {
-                                    if (field.value?.includes(value)) {
-                                      field.onChange(
-                                        field.value?.filter((v) => v !== value)
-                                      );
-                                    } else {
-                                      field.onChange([...field.value, value]);
-                                    }
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      field.value?.includes(classroom.id)
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {ClassLevelMap[classroom.classLevel]}{" "}
-                                  {classroom.code} - {classroom.branch}
-                                </CommandItem>
-                              ))}
-                          </CommandGroup>
-                        </ScrollArea>
-                      )}
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="teacherIdList"
-            render={({ field }) => (
-              <FormItem className="w-full md:w-1/2">
-                <FormLabel>Teachers</FormLabel>
-                <FormDescription>
-                  Select teachers that you want to create timetable for.
-                </FormDescription>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        disabled={form.formState.isSubmitting || !!isMutating}
-                        type="button"
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          "w-full justify-between",
-                          field?.value?.length == 0 && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value?.length > 0 ? (
-                          <span>Select teachers ({field.value?.length})</span>
-                        ) : (
-                          "Select teachers"
-                        )}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent align="start" className="w-full p-0">
-                    <Command className="w-80">
-                      <CommandInput placeholder="Search teacher..." />
-                      <CommandEmpty>No teacher found.</CommandEmpty>
-                      {isTeacherDataLoading ? (
-                        <CommandLoading />
-                      ) : (
-                        <ScrollArea className="h-56">
-                          <CommandGroup>
-                            {teacherData?.teachers.map((teacher) => (
-                              <CommandItem
-                                key={teacher.id}
-                                value={teacher.id}
-                                onSelect={(value) => {
-                                  if (field.value?.includes(value)) {
-                                    field.onChange(
-                                      field.value?.filter((v) => v !== value)
-                                    );
-                                  } else {
-                                    field.onChange([...field.value, value]);
-                                  }
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    field.value?.includes(teacher.id)
-                                      ? "opacity-100"
-                                      : "opacity-0"
+            name="timetable"
+            render={() => (
+              <FormItem className="mx-auto w-full rounded-md border lg:w-4/5">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-center">Class Grade</TableHead>
+                      <TableHead className="text-center">Code</TableHead>
+                      <TableHead className="text-center">Branch</TableHead>
+                      <TableHead className="text-center">
+                        Teacher List
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isClassroomDataLoading ? (
+                      <TableLoading />
+                    ) : (
+                      classroomData?.classrooms
+                        .sort((a, b) => {
+                          const x = Number(a.classLevel.slice(1, 3));
+                          const y = Number(b.classLevel.slice(1, 3));
+                          return x - y;
+                        })
+                        .map((classroom, clIndex) => (
+                          <FormField
+                            key={classroom.id}
+                            control={form.control}
+                            name={`timetable.${clIndex}`}
+                            render={() => (
+                              <TableRow key={classroom.id}>
+                                <TableCell className="text-center">
+                                  {ClassLevelMap[classroom.classLevel]}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  {classroom.code}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  {classroom.branch}
+                                </TableCell>
+                                <TableCell className="max-w-[96px] text-center">
+                                  {timetableFields.find(
+                                    (tf) => tf.classroomId === classroom.id
+                                  ) ? (
+                                    <FormField
+                                      control={form.control}
+                                      name={`timetable.${clIndex}.teacherIdList`}
+                                      render={({ field }) => (
+                                        <AssignTeachersCombobox
+                                          field={field}
+                                          isMutating={isMutating}
+                                          isSubmitting={
+                                            form.formState.isSubmitting
+                                          }
+                                        />
+                                      )}
+                                    />
+                                  ) : (
+                                    <Button
+                                      disabled={
+                                        form.formState.isSubmitting ||
+                                        !!isMutating
+                                      }
+                                      type="button"
+                                      size="sm"
+                                      className={"m-0 justify-between"}
+                                      onClick={() => {
+                                        appendClassroom({
+                                          classroomId: classroom.id,
+                                          teacherIdList: [],
+                                        });
+                                      }}
+                                    >
+                                      Assign Teacher
+                                    </Button>
                                   )}
-                                />
-                                {teacher.name} {teacher.surname}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </ScrollArea>
-                      )}
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          />
+                        ))
+                    )}
+                  </TableBody>
+                </Table>
+                <FormMessage className="text-center">
+                  {form.formState.errors.timetable && (
+                    <span>
+                      You must assign teachers to classrooms to create a
+                      timetable.
+                    </span>
+                  )}
+                </FormMessage>
               </FormItem>
             )}
           />
@@ -343,10 +361,10 @@ const CreateTimetableForm = ({ isMutating }: { isMutating: boolean }) => {
                 color="#5090FF"
                 secondaryColor="#FFFFFF"
               />
-              <span>Submit</span>
+              <span>Create Timetable</span>
             </>
           ) : (
-            "Submit"
+            "Create Timetable"
           )}
         </Button>
       </form>
@@ -355,15 +373,45 @@ const CreateTimetableForm = ({ isMutating }: { isMutating: boolean }) => {
 };
 
 const Create: NextPage = (props) => {
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const trpcContext = api.useContext();
   const { mutateAsync: createTimetable, isLoading } =
     api.timetable.createTimetable.useMutation({
-      onSuccess: () => {
-        console.log("success");
+      onSuccess: async () => {
+        toast({
+          title: "Create",
+          description: "Timetable created successfully",
+          action: (
+            <ToastAction
+              altText="View timetable"
+              onClick={() => router.push("/dashboard/timetables")}
+            >
+              View
+            </ToastAction>
+          ),
+        });
+
+        await trpcContext.classroom.getClassrooms.invalidate();
+        await trpcContext.teacher.getTeachers.invalidate();
       },
       onError: () => {
-        console.log("error");
+        toast({
+          variant: "destructive",
+          title: "Create",
+          description: "Error creating timetable",
+        });
       },
     });
+
+  const onSubmit = async (data: CreateTimetableInput) => {
+    toast({
+      title: "Create",
+      description: "Creating timetable...",
+    });
+    await createTimetable(data).catch((err) => console.log(err));
+  };
 
   return (
     <>
@@ -374,7 +422,7 @@ const Create: NextPage = (props) => {
       </Head>
       <Layout>
         <div className="w-full">
-          <div className="m-8 space-y-6">
+          <div className="m-4 space-y-2 lg:m-8">
             <h1 className="text-center text-2xl font-bold text-foreground">
               Create Timetable
             </h1>
@@ -393,8 +441,11 @@ const Create: NextPage = (props) => {
                 <Link href="/timetables">here</Link>
               </Button>
             </p>
+            <p className="text-base text-muted-foreground">
+              Select from teacher list for every classroom to assign.
+            </p>
           </div>
-          <CreateTimetableForm isMutating={isLoading} />
+          <CreateTimetableForm onSubmit={onSubmit} isMutating={isLoading} />
         </div>
       </Layout>
     </>
