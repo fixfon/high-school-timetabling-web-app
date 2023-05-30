@@ -110,9 +110,9 @@ model TeacherLesson {
 }
 
 // * e.g. Teacherid:1 from orgId:1 can work on Monday(C1,C2,C3,C7,C8) AND Tuesday(C1,C2,C3) AND Wednesday(all) so
-// * There will be three records in TeacherWorkPreferance for teacherId:1 from orgId:1
+// * There will be three records in TeacherWorkPreference for teacherId:1 from orgId:1
 // * @@unique([workingDay, teacherId, organizationId]) ensures that.
-model TeacherWorkPreferance {
+model TeacherWorkPreference {
     id          String      @id @default(cuid())
     workingDay  Day
     workingHour ClassHour[]
@@ -135,7 +135,7 @@ model Teacher {
     description           String?
     createdAt             DateTime                @default(now())
     updatedAt             DateTime                @updatedAt
-    TeacherWorkPreferance TeacherWorkPreferance[]
+    TeacherWorkPreference TeacherWorkPreference[]
     Classroom             Classroom[]
     Class                 Class[]
     TeacherLesson         TeacherLesson[]
@@ -156,14 +156,9 @@ model OrganizationClassHour {
     id          String   @id @default(cuid())
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
-    firstHour   String
-    secondHour  String
-    thirdHour   String
-    fourthHour  String
-    fifthHour   String
-    sixthHour   String
-    seventhHour String
-    eighthHour  String
+    startHour   String
+    breakMinute Int
+    lunchMinute Int
 
     Organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
     organizationId String
@@ -183,7 +178,7 @@ model Organization {
 
     User_members          User[]                  @relation("User_organizationMember")
     teachers              Teacher[]
-    TeacherWorkPreferance TeacherWorkPreferance[]
+    TeacherWorkPreference TeacherWorkPreference[]
     Classroom             Classroom[]
     Class                 Class[]
     OrganizationClassHour OrganizationClassHour?

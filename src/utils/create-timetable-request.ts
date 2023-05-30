@@ -33,7 +33,7 @@ const createTimetableRequest = async (input: CreateTimetableInput) => {
                 include: {
                   Teacher: {
                     include: {
-                      TeacherWorkPreferance: true,
+                      TeacherWorkPreference: true,
                       TeacherLesson: {
                         include: {
                           Lesson: true,
@@ -126,11 +126,11 @@ const createTimetableRequest = async (input: CreateTimetableInput) => {
           };
         }
       ),
-      timePreferences: teacherLesson.Teacher.TeacherWorkPreferance.map(
-        (teacherWorkPreferance) => {
+      timePreferences: teacherLesson.Teacher.TeacherWorkPreference.map(
+        (TeacherWorkPreference) => {
           return {
-            day: teacherWorkPreferance.workingDay,
-            classHours: teacherWorkPreferance.workingHour,
+            day: TeacherWorkPreference.workingDay,
+            classHours: TeacherWorkPreference.workingHour,
           };
         }
       ),

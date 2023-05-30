@@ -13,7 +13,7 @@ export const teacherRouter = createTRPCRouter({
       },
       include: {
         Department: true,
-        TeacherWorkPreferance: true,
+        TeacherWorkPreference: true,
         TeacherLesson: {
           include: {
             Lesson: true,
@@ -45,7 +45,7 @@ export const teacherRouter = createTRPCRouter({
           id: teacherId,
         },
         include: {
-          TeacherWorkPreferance: true,
+          TeacherWorkPreference: true,
           Department: true,
           User: true,
           TeacherLesson: {
@@ -142,7 +142,7 @@ export const teacherRouter = createTRPCRouter({
 
       if (timePreferences) {
         for (const days of timePreferences) {
-          await ctx.prisma.teacherWorkPreferance.create({
+          await ctx.prisma.teacherWorkPreference.create({
             data: {
               organizationId: orgId,
               teacherId: teacher.id,
@@ -207,7 +207,7 @@ export const teacherRouter = createTRPCRouter({
         },
         include: {
           User: true,
-          TeacherWorkPreferance: true,
+          TeacherWorkPreference: true,
           TeacherLesson: true,
         },
       });
@@ -285,7 +285,7 @@ export const teacherRouter = createTRPCRouter({
       }
 
       if (timePreferences) {
-        for (const day of foundTeacher.TeacherWorkPreferance) {
+        for (const day of foundTeacher.TeacherWorkPreference) {
           const inputDay = timePreferences.find(
             (inputDay) => inputDay.day === day.workingDay
           );
@@ -303,7 +303,7 @@ export const teacherRouter = createTRPCRouter({
 
           if (toBeDeleted.length > 0 || toBeAdded.length > 0) {
             // update workinghour array without deleting the day record
-            await ctx.prisma.teacherWorkPreferance.update({
+            await ctx.prisma.teacherWorkPreference.update({
               where: {
                 id: day.id,
               },
@@ -366,7 +366,7 @@ export const teacherRouter = createTRPCRouter({
           },
           include: {
             TeacherLesson: true,
-            TeacherWorkPreferance: true,
+            TeacherWorkPreference: true,
             User: true,
           },
         });

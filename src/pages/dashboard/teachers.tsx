@@ -12,7 +12,7 @@ import teacherSchema, {
 import {
   ClassHour,
   type Teacher,
-  type TeacherWorkPreferance,
+  type TeacherWorkPreference,
   type Lesson,
   type Department,
   type User,
@@ -712,7 +712,7 @@ const teacherColumns: ColumnDef<
     TeacherLesson: (TeacherLesson & {
       Lesson: Lesson;
     })[];
-    TeacherWorkPreferance: TeacherWorkPreferance[];
+    TeacherWorkPreference: TeacherWorkPreference[];
   }
 >[] = [
   {
@@ -809,7 +809,7 @@ type EditTeacherProps = {
       TeacherLesson: (TeacherLesson & {
         Lesson: Lesson;
       })[];
-      TeacherWorkPreferance: TeacherWorkPreferance[];
+      TeacherWorkPreference: TeacherWorkPreference[];
     }
   >;
 };
@@ -865,7 +865,7 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
       description,
       departmentId,
       TeacherLesson,
-      TeacherWorkPreferance,
+      TeacherWorkPreference,
       User,
     } = row.original;
 
@@ -878,7 +878,7 @@ const EditTeacher = ({ row }: EditTeacherProps) => {
       departmentId: departmentId ?? undefined,
       createUser: true,
       email: User?.email ?? "",
-      timePreferences: TeacherWorkPreferance.map((tw) => ({
+      timePreferences: TeacherWorkPreference.map((tw) => ({
         day: tw.workingDay,
         classHour: tw.workingHour,
       })),
