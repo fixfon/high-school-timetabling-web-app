@@ -13,7 +13,7 @@ import { api } from "~/utils/api";
 import uuid from "react-uuid";
 import { cn } from "~/utils/cn";
 import { useSession } from "next-auth/react";
-import { type Dispatch, type SetStateAction, useState, useEffect } from "react";
+import { type Dispatch, type SetStateAction, useState } from "react";
 import {
   Popover,
   PopoverContent,

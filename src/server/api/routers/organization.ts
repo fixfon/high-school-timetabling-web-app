@@ -5,8 +5,178 @@ import userSchema from "~/schemas/user";
 import { hash } from "argon2";
 import organizationSchema from "~/schemas/organization";
 import calculateOrgClassHours from "~/utils/calculate-org-class-hours";
+import { ClassLevelMap } from "~/utils/enum-mapper";
 
 export const organizationRouter = createTRPCRouter({
+  getDashboardStats: protectedProcedure.query(async ({ ctx }) => {
+    const { orgId, memberRole, id } = ctx.session.user;
+
+    if (!orgId) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "You must be a member of an organization to view it",
+      });
+    }
+
+    if (memberRole === "MANAGER") {
+      const organizationRes = await ctx.prisma.organization.findFirst({
+        where: {
+          id: orgId,
+        },
+        include: {
+          Classroom: true,
+          teachers: {
+            include: {
+              Class: true,
+            },
+          },
+          User_members: true,
+        },
+      });
+
+      if (!organizationRes) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Could not find the organization",
+        });
+      }
+      const orgName = organizationRes.name;
+      const classroomCount = organizationRes.Classroom.length;
+      const teacherCount = organizationRes.teachers.length;
+      const userAccountCount = organizationRes.User_members.length;
+
+      // find teachers that have classes today
+      const teachersWithClassesToday = organizationRes.teachers
+        .filter((teacher) => {
+          const teacherHasClassesToday = teacher.Class.some((class_) => {
+            const today = new Date();
+            // get day as string
+            const day = today.toLocaleString("default", { weekday: "long" });
+            const classDay = class_.classDay;
+
+            return day === classDay;
+          });
+
+          return teacherHasClassesToday;
+        })
+        .map((teacher) => {
+          return teacher.name + " " + teacher.surname;
+        });
+
+      const teachersWithClassesTodayCount = teachersWithClassesToday.length;
+
+      return {
+        orgName,
+        classroomCount,
+        teacherCount,
+        userAccountCount,
+        teachersWithClassesTodayCount,
+      };
+    } else {
+      const foundTeacher = await ctx.prisma.teacher.findFirst({
+        where: {
+          userId: id,
+        },
+        include: {
+          Class: {
+            include: {
+              Classroom: true,
+              Lesson: true,
+            },
+          },
+          Organization: true,
+          Department: true,
+        },
+      });
+
+      if (!foundTeacher) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Could not find the teacher",
+        });
+      }
+
+      const orgName = foundTeacher.Organization.name;
+      const departmentName = foundTeacher.Department.name;
+
+      const orgClassHour = await ctx.prisma.organizationClassHour.findFirst({
+        where: {
+          organizationId: orgId,
+        },
+      });
+
+      if (orgClassHour) {
+        const orgDailyHourMap = calculateOrgClassHours({
+          startHour: orgClassHour.startHour,
+          breakTime: orgClassHour.breakMinute,
+          lunchTime: orgClassHour.lunchMinute,
+        });
+
+        // find the classes that the teacher has today with lesson name and classroom name
+        const classesToday = foundTeacher.Class.filter((class_) => {
+          const today = new Date();
+          // get day as string
+          const day = today.toLocaleString("default", { weekday: "long" });
+          const classDay = class_.classDay;
+
+          return day === classDay;
+        }).map((class_) => {
+          const classHour = orgDailyHourMap.find(
+            (hour) => hour.name === class_.classHour
+          );
+          return {
+            classHour:
+              classHour && `${classHour?.startHour} - ${classHour?.endHour}`,
+            lessonName: class_.Lesson.name,
+            classroomName: `${
+              ClassLevelMap[class_.Classroom.classLevel]
+            } + " " + ${class_.Classroom.code} + " " + ${
+              class_.Classroom.branch || ""
+            }`,
+          };
+        });
+
+        const classesTodayCount = classesToday.length;
+
+        return {
+          orgName,
+          departmentName,
+          classesTodayCount,
+          classesToday,
+        };
+      } else {
+        // find the classes that the teacher has today with lesson name and classroom name
+        const classesToday = foundTeacher.Class.filter((class_) => {
+          const today = new Date();
+          // get day as string
+          const day = today.toLocaleString("default", { weekday: "long" });
+          const classDay = class_.classDay;
+
+          return day === classDay;
+        }).map((class_) => {
+          return {
+            classHour: class_.classHour,
+            lessonName: class_.Lesson.name,
+            classroomName: `${
+              ClassLevelMap[class_.Classroom.classLevel]
+            } + " " + ${class_.Classroom.code} + " " + ${
+              class_.Classroom.branch || ""
+            }`,
+          };
+        });
+
+        const classesTodayCount = classesToday.length;
+
+        return {
+          orgName,
+          departmentName,
+          classesTodayCount,
+          classesToday,
+        };
+      }
+    }
+  }),
+
   getOrganizations: protectedProcedure.query(async ({ ctx }) => {
     const organizationRes = await ctx.prisma.organization.findMany({
       orderBy: {
