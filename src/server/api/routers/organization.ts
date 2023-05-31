@@ -4,6 +4,7 @@ import { z } from "zod";
 import userSchema from "~/schemas/user";
 import { hash } from "argon2";
 import organizationSchema from "~/schemas/organization";
+import calculateOrgClassHours from "~/utils/calculate-org-class-hours";
 
 export const organizationRouter = createTRPCRouter({
   getOrganizations: protectedProcedure.query(async ({ ctx }) => {
@@ -57,6 +58,40 @@ export const organizationRouter = createTRPCRouter({
 
     return {
       organization: organizationRes,
+    };
+  }),
+
+  getOrganizationClassHours: protectedProcedure.query(async ({ ctx }) => {
+    const { orgId } = ctx.session.user;
+
+    if (!orgId) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "You must be a member of an organization to view it",
+      });
+    }
+
+    const orgClassHour = await ctx.prisma.organizationClassHour.findFirst({
+      where: {
+        organizationId: orgId,
+      },
+    });
+
+    if (!orgClassHour) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Could not find the organization class hours",
+      });
+    }
+
+    const orgDailyHourMap = calculateOrgClassHours({
+      startHour: orgClassHour.startHour,
+      breakTime: orgClassHour.breakMinute,
+      lunchTime: orgClassHour.lunchMinute,
+    });
+
+    return {
+      orgDailyHourMap,
     };
   }),
 

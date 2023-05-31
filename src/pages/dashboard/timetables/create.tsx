@@ -49,8 +49,8 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { useToast } from "~/components/ui/use-toast";
 import { ToastAction } from "~/components/ui/toast";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { TimetableRequest } from "~/utils/create-timetable-request";
+import { useState } from "react";
+import { type TimetableRequest } from "~/utils/create-timetable-request";
 
 const CommandLoading = () => {
   return (
@@ -446,7 +446,7 @@ const Create: NextPage = (props) => {
                 type="button"
                 variant="link"
               >
-                <Link href="/timetables">here</Link>
+                <Link href="/dashboard/timetables">here</Link>
               </Button>
             </p>
             <p className="text-base text-muted-foreground">

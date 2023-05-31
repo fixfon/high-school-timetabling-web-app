@@ -68,7 +68,7 @@ export const timetableRouter = createTRPCRouter({
         teacherId: z.string().optional(),
       })
     )
-    .query(({ input, ctx }) => {
+    .query(async ({ input, ctx }) => {
       const { orgId } = ctx.session.user;
 
       if (!orgId) {
@@ -88,13 +88,98 @@ export const timetableRouter = createTRPCRouter({
       }
 
       if (classroomId && !teacherId) {
+        const classes = await ctx.prisma.class.findMany({
+          where: {
+            classroomId,
+            organizationId: orgId,
+          },
+          include: {
+            Classroom: true,
+          },
+        });
+
+        if (!classes) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Class not found",
+          });
+        }
+
+        return {
+          classes,
+        };
       }
 
       if (!classroomId && teacherId) {
+        const classes = await ctx.prisma.class.findMany({
+          where: {
+            teacherId,
+            organizationId: orgId,
+          },
+          include: {
+            Teacher: true,
+          },
+        });
+
+        if (!classes) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Class not found",
+          });
+        }
+
+        return {
+          classes,
+        };
       }
 
       return {
-        success: true,
+        classes: [],
       };
     }),
+
+  getTeacherTimetable: protectedProcedure.query(async ({ ctx }) => {
+    const { orgId, id } = ctx.session.user;
+
+    if (!orgId) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      });
+    }
+
+    const foundTeacher = await ctx.prisma.teacher.findUnique({
+      where: {
+        userId: id,
+      },
+    });
+
+    if (!foundTeacher) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Teacher not found",
+      });
+    }
+
+    const classes = await ctx.prisma.class.findMany({
+      where: {
+        teacherId: foundTeacher.id,
+        organizationId: orgId,
+      },
+      include: {
+        Teacher: true,
+      },
+    });
+
+    if (!classes) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Class not found",
+      });
+    }
+
+    return {
+      classes,
+    };
+  }),
 });

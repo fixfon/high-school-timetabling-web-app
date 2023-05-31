@@ -85,7 +85,19 @@ const calculateOrgClassHours = (input: {
     }
   }
 
-  return classHours;
+  // order items by start hour
+  const result = classHours.sort((a, b) => {
+    const aStartHour =
+      parseInt(a.startHour.split(":")[0]!) * 60 +
+      parseInt(a.startHour.split(":")[1]!);
+    const bStartHour =
+      parseInt(b.startHour.split(":")[0]!) * 60 +
+      parseInt(b.startHour.split(":")[1]!);
+
+    return aStartHour - bStartHour;
+  });
+
+  return result;
 };
 
 export default calculateOrgClassHours;
