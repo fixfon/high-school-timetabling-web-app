@@ -65,7 +65,7 @@ const DashboardHome: NextPage = (props) => {
         <div className="w-full py-8">
           <h1 className="text-center text-2xl font-bold">
             Welcome Back,{" "}
-            <span className="italic font-medium">
+            <span className="font-medium italic">
               {session?.user.name} {session?.user.surname}
             </span>
           </h1>

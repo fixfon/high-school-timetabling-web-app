@@ -8,6 +8,31 @@ import calculateOrgClassHours from "~/utils/calculate-org-class-hours";
 import { ClassLevelMap } from "~/utils/enum-mapper";
 
 export const organizationRouter = createTRPCRouter({
+  getAdminStats: protectedProcedure.query(async ({ ctx }) => {
+    const { role } = ctx.session.user;
+
+    if (role !== "SUPERADMIN") {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "You must be an admin to view this page",
+      });
+    }
+
+    const userCount = await ctx.prisma.user.count();
+    const teacherCount = await ctx.prisma.teacher.count();
+    const lessonCount = await ctx.prisma.lesson.count();
+    const organizationCount = await ctx.prisma.organization.count();
+    const departmentCount = await ctx.prisma.department.count();
+
+    return {
+      userCount,
+      teacherCount,
+      lessonCount,
+      organizationCount,
+      departmentCount,
+    };
+  }),
+
   getDashboardStats: protectedProcedure.query(async ({ ctx }) => {
     const { orgId, memberRole, id } = ctx.session.user;
 
