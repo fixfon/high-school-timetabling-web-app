@@ -1,4 +1,4 @@
-import { LogOut } from "lucide-react";
+import { LogOut, PanelLeftOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,14 +12,31 @@ import { Avatar } from "../ui/avatar";
 import { AvatarImage } from "../ui/avatar";
 import { AvatarFallback } from "../ui/avatar";
 import Image from "next/image";
+import { Button } from "../ui/button";
 
-export default function Header() {
+export default function Header({
+  setIsCollapsed,
+}: {
+  setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const { data: session, status } = useSession();
 
   return (
     <>
-      <header className="h-14 w-full border-b bg-background shadow-sm">
+      <header className="z-10 h-14 w-full border-b bg-background shadow-sm max-lg:sticky max-lg:top-0">
         <div className="container flex h-full w-full items-center justify-between px-4 py-2 lg:px-0">
+          <div className="lg:hidden">
+            <Button
+              type="button"
+              variant="link"
+              className="m-0 p-0 text-foreground"
+              onClick={() => {
+                setIsCollapsed((prev) => !prev);
+              }}
+            >
+              <PanelLeftOpen height={24} width={24} />
+            </Button>
+          </div>
           <Image
             src="/logo-light.svg"
             alt="TimetablePRO Logo Light"
