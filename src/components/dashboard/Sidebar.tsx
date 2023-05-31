@@ -49,7 +49,7 @@ export default function Sidebar({
         }
       }}
       className={cn(
-        "lg:relative max-lg:h-full lg:min-h-[calc(100vh-56px)] w-full transition-all lg:max-w-[20%]",
+        "w-full transition-all max-lg:h-full lg:relative lg:h-[calc(100vh-56px)] lg:max-w-[20%]",
         isCollapsed
           ? "max-lg:absolute max-lg:z-10 max-lg:cursor-pointer max-lg:bg-gray-700 max-lg:bg-opacity-50 max-lg:backdrop-blur"
           : "max-lg:hidden"
@@ -60,7 +60,7 @@ export default function Sidebar({
         className="relative h-full w-full max-lg:w-2/3 max-lg:bg-background"
       >
         {session?.user.role === "SUPERADMIN" ? (
-          <div className="flex h-[66%] flex-col items-start justify-center space-y-8 font-medium">
+          <div className="flex flex-col items-start justify-center space-y-8 pt-12 font-medium lg:h-[66%] lg:pt-0">
             <div
               className={cn(
                 "w-11/12 cursor-pointer rounded-lg py-2 hover:bg-accent lg:w-3/4 lg:px-4",
@@ -133,7 +133,7 @@ export default function Sidebar({
             </div>
           </div>
         ) : session?.user.memberRole === "MANAGER" ? (
-          <div className="flex h-[66%] flex-col items-start justify-center space-y-8 font-medium">
+          <div className="flex flex-col items-start justify-center space-y-8 pt-12 font-medium lg:h-[66%] lg:pt-0">
             <div
               className={cn(
                 "w-11/12 cursor-pointer rounded-lg py-2 hover:bg-accent lg:w-3/4 lg:px-4",
@@ -238,7 +238,7 @@ export default function Sidebar({
             </div>
           </div>
         ) : (
-          <div className="flex h-[66%] flex-col items-start justify-center space-y-8 font-medium">
+          <div className="flex flex-col items-start justify-center space-y-8 pt-12 font-medium lg:h-[66%] lg:pt-0">
             <div
               className={cn(
                 "w-11/12 cursor-pointer rounded-lg py-2 hover:bg-accent lg:w-3/4 lg:px-4",
