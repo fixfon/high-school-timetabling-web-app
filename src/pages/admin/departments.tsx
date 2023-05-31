@@ -211,7 +211,7 @@ const DepartmentTableView = () => {
     api.department.getDepartments.useQuery();
 
   return (
-    <div className="w-full pt-12 lg:w-3/5">
+    <div className="w-full px-2 pt-8 lg:w-3/5 lg:px-0">
       <DataTable
         columns={departmentTableColumns}
         data={departmentData?.departments ?? []}

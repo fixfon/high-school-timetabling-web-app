@@ -40,7 +40,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="max-w-sm rounded-md border md:max-w-full">
+      <div className="max-w-full rounded-md border">
         <Table className="overflow-auto">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

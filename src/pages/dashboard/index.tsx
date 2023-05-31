@@ -51,7 +51,7 @@ const DashboardHome: NextPage = (props) => {
     api.organization.getDashboardStats.useQuery(undefined, {
       staleTime: Infinity,
       enabled:
-        status === "authenticated" && session.user.memberRole === "MANAGER",
+        status === "authenticated",
     });
 
   return (
@@ -62,7 +62,7 @@ const DashboardHome: NextPage = (props) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        <div className="w-full py-8">
+        <div className="w-full py-8 px-2 lg:px-0">
           <h1 className="text-center text-2xl font-bold">
             Welcome Back,{" "}
             <span className="font-medium italic">
@@ -128,16 +128,15 @@ const DashboardHome: NextPage = (props) => {
               </div>
             </>
           )}
-          {status === "loading" ||
-            (isOrgStatsLoading && (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  <StatCardLoading />
-                  <StatCardLoading />
-                  <StatCardLoading />
-                </div>
-              </>
-            ))}
+          {(status === "loading" || isOrgStatsLoading) && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                <StatCardLoading />
+                <StatCardLoading />
+                <StatCardLoading />
+              </div>
+            </>
+          )}
         </div>
       </Layout>
     </>

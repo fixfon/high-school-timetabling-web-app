@@ -54,7 +54,7 @@ const AdminHome: NextPage = (props) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        <div className="w-full py-8">
+        <div className="w-full py-8 px-2 lg:px-0">
           <h1 className="text-center text-2xl font-bold">
             Welcome Back,{" "}
             <span className="font-medium italic">

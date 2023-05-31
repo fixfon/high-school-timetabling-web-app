@@ -791,7 +791,7 @@ const TeacherDeleteButton = ({ id }: { id: string }) => {
 const TeacherTableView = () => {
   const { data: teachers, isLoading } = api.teacher.getTeachers.useQuery();
   return (
-    <div className="w-full pt-8 lg:w-3/5">
+    <div className="w-full px-2 lg:px-0 pt-8 lg:w-3/5">
       <DataTable
         columns={teacherColumns}
         data={teachers?.teachers ?? []}
