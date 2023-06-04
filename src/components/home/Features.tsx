@@ -14,8 +14,9 @@ export default function Features() {
           your lesson priorities, teachers and students.
         </p>
         <Image
-          src="/placeholder1.png"
-          alt="Placeholder 1"
+          src="/mockup1.jpg"
+          className="rounded-lg"
+          alt="Timetable Mockup"
           width={1440}
           height={646}
         />
@@ -38,8 +39,9 @@ export default function Features() {
           </div>
           <div className="flex items-center justify-center lg:w-1/2">
             <Image
-              src="/placeholder2.png"
-              alt="Placeholder 2"
+              src="/manage-teachers.jpg"
+              alt="Manage Teachers"
+              className="rounded-lg"
               width={600}
               height={289}
             />
@@ -59,9 +61,10 @@ export default function Features() {
           </div>
           <div className="flex items-center justify-center lg:w-1/2">
             <Image
-              src="/placeholder2.png"
-              alt="Placeholder 2"
-              width={600}
+              src="/manage-classrooms.jpg"
+              className="rounded-lg"
+              alt="Manage Classrooms"
+              width={580}
               height={289}
             />
           </div>
@@ -79,36 +82,16 @@ export default function Features() {
           </div>
           <div className="flex items-center justify-center lg:w-1/2">
             <Image
-              src="/placeholder2.png"
-              alt="Placeholder 2"
-              width={600}
+              src="/optimized-timetable.jpg"
+              alt="Optimized Timetable Creation"
+              className="rounded-lg"
+              width={580}
               height={289}
             />
           </div>
         </div>
 
         <div className="flex flex-col px-8 pb-10 lg:flex-row-reverse lg:gap-6">
-          <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
-            <h2 className="bg-gradient-to-r from-foreground via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
-              Priority Weights
-            </h2>
-            <p>
-              Set priority for every lesson to get involved in timetable
-              creation process. The algorithm will consider your personalized
-              weights while creating most-optimized timetable.
-            </p>
-          </div>
-          <div className="flex items-center justify-center lg:w-1/2">
-            <Image
-              src="/placeholder2.png"
-              alt="Placeholder 2"
-              width={600}
-              height={289}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col px-8 pb-10 lg:flex-row lg:gap-6">
           <div className="flex flex-shrink flex-col items-center justify-evenly gap-4 py-16 lg:w-1/2 lg:gap-0">
             <h2 className="bg-gradient-to-r from-foreground via-primary to-complementary bg-clip-text text-4xl font-extrabold text-transparent">
               Modern Interface
@@ -122,9 +105,10 @@ export default function Features() {
           </div>
           <div className="flex items-center justify-center lg:w-1/2">
             <Image
-              src="/placeholder2.png"
-              alt="Placeholder 2"
-              width={600}
+              src="/mockup2.png"
+              alt="Modern Interface Mockup"
+              className="rounded-lg"
+              width={580}
               height={289}
             />
           </div>
